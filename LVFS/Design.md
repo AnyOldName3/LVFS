@@ -1,15 +1,37 @@
 ﻿#Ways to represent sources
-*	Config file with list
-*	UID can be path
+* Config file with list
+* UID can be path
 
 #Finding files
-*	Scan each source at runtime
+* Scan each source at runtime
 	- allows other applications to modify source
-*	Have a map from path to actual file
+* Have a map from path to actual file
 	- faster for each operation, but longer loading time
 
 #Writes
-*	COW
+* COW
 	- slow
-*	Copy chunk on write
-*	Store deltas only
+* Copy chunk on write
+* Store deltas only
+
+#Symlinks/shortcuts
+* Where these link back into the VFS, they must represent the virtual version of the file.
+
+##Systems
+
+#Selector
+* Initialised with set of sources
+* VFS Path goes in
+* Real path comes out
+	- May need to be a more complex thing if different byte ranges need to come from different places.
+
+#Reader
+* Takes stuff from Selector
+* Reads some files
+* Returns actual data
+
+#Writer
+* Takes stuff from Selector
+* Potentially gets Reader to do some stuff
+* Meddles with actual files.
+* Doesn't return anything interesting
