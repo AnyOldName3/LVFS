@@ -24,6 +24,7 @@
 * VFS Path goes in
 * 'Real path' comes out
 	- May need to be a more complex thing if different byte ranges need to come from different places.
+	- Can identify which sources have bonus behaviour with overloaded functions specific to interfaces.
 
 ##Reader
 * Takes stuff from Selector
@@ -37,7 +38,8 @@
 * Doesn't return anything interesting
 
 ##Source
-* Interface
+* Abstract Class
 * Gives list of files
 * Actually reads from/writes to files (or whatever)
 * Implementations could be directories, archives etc.
+* Extra interfaces specify bonus behaviour.
