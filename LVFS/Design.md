@@ -22,16 +22,22 @@
 ##Selector
 * Initialised with set of sources
 * VFS Path goes in
-* Real path comes out
+* 'Real path' comes out
 	- May need to be a more complex thing if different byte ranges need to come from different places.
 
 ##Reader
 * Takes stuff from Selector
-* Reads some files
+* Asks sources to read some files
 * Returns actual data
 
 ##Writer
 * Takes stuff from Selector
 * Potentially gets Reader to do some stuff
-* Meddles with actual files.
+* Asks sources to meddle with actual files.
 * Doesn't return anything interesting
+
+##Source
+* Interface
+* Gives list of files
+* Actually reads from/writes to files (or whatever)
+* Implementations could be directories, archives etc.
