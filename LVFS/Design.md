@@ -17,6 +17,12 @@
 ##Symlinks/shortcuts
 * Where these link back into the VFS, they must represent the virtual version of the file.
 
+##Deleting directories
+* Must remember that contents should not reappear if replacement directory is made.
+	- Could mark all children as deleted on deletion of parent
+	- Could mark children as deleted when replacement directory is made.
+* This is the responsibility of a Source.
+
 #Systems
 
 ##Selector
