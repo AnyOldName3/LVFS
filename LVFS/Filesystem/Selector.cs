@@ -61,5 +61,17 @@ namespace LVFS.Filesystem
 			}
 			return null;
 		}
+
+		/// <summary>
+		/// Lists the files in the directory represented by the input.
+		/// </summary>
+		/// <param name="path">The directory to list the contents of</param>
+		/// <returns>A list of file information about the directory contents, or null if the directory does not exist within the VFS</returns>
+		public IList<DokanNet.FileInformation> ListFiles(string path)
+		{
+
+
+			return null;
+		}
 	}
 }
