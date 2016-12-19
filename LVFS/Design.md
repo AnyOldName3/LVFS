@@ -8,6 +8,13 @@
 * Have a map from path to actual file
 	- faster for each operation, but longer loading time
 
+##Listing files
+* Selector could ask each Source what it has in turn
+	- Selector lives up to its name.
+	- It would have to know the semantics of each Source.
+* Could give each Source the output of the previous to do with as it pleases.
+	- Allows sources to make a lot of changes, but potentially too many.
+
 ##Writes
 * COW
 	- slow
