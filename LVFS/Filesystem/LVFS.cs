@@ -12,6 +12,8 @@ namespace LVFS.Filesystem
 {
 	class LVFS : IDokanOperations
 	{
+		private Selector selector;
+
 		public void Cleanup(string fileName, DokanFileInfo info)
 		{
 			throw new NotImplementedException();
@@ -39,7 +41,9 @@ namespace LVFS.Filesystem
 
 		public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			files = selector.ListFiles(fileName);
+
+			return files != null ? DokanResult.Success : DokanResult.FileNotFound;
 		}
 
 		public NtStatus FindFilesWithPattern(string fileName, string searchPattern, out IList<FileInformation> files, DokanFileInfo info)
@@ -67,7 +71,12 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			FileInformation? returned = selector.GetFileInformation(fileName);
+
+			NtStatus returnCode = returned != null ? DokanResult.Success : DokanResult.FileNotFound;
+			fileInfo = returned ?? new FileInformation();
+
+			return returnCode;
 		}
 
 		public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)

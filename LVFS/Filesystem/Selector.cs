@@ -71,9 +71,12 @@ namespace LVFS.Filesystem
 		/// <returns>A list of file information about the directory contents, or null if the directory does not exist within the VFS</returns>
 		public IList<FileInformation> ListFiles(string path)
 		{
+			return mSources.Last<Source>().ListFiles(path);
+		}
 
-
-			return null;
+		public FileInformation? GetFileInformation(string path)
+		{
+			return mSources.Last<Source>().GetFileInformation(path);
 		}
 	}
 }
