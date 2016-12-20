@@ -24,6 +24,7 @@
 			- Could limit this by making the previous source a private member of the abstract class and giving limited interactions with it via protected methods.
 		* Probably hits the lower bound on stuff actually required.
 		* Sources would have to know their predecessorm which is transitive, so somewhat wipes out the need for Selector.
+		* Only viable option designed so far.
 
 ##Writes
 * COW
