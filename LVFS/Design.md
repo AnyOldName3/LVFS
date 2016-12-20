@@ -12,8 +12,18 @@
 * Selector could ask each Source what it has in turn
 	- Selector lives up to its name.
 	- It would have to know the semantics of each Source.
+	- Would almost certainly end up ridiculously complicated.
 * Could give each Source the output of the previous to do with as it pleases.
 	- Allows sources to make a lot of changes, but potentially too many.
+	- Needs entire output of lower priority sources if we allow deletions, renaming etc. not just the requested folder.
+	- That would probably be very slow, so must be only done once - we cannot modify sources except via the VFS this way.
+* Something complicated
+	- Pass each Source a pointer to its predecessor
+		* It can interrogate it about its contents
+		* Potentially allows too much to be known/asked about
+			- Could limit this by making the previous source a private member of the abstract class and giving limited interactions with it via protected methods.
+		* Probably hits the lower bound on stuff actually required.
+		* Sources would have to know their predecessorm which is transitive, so somewhat wipes out the need for Selector.
 
 ##Writes
 * COW
