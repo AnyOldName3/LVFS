@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DokanNet;
+
 using LVFS.Sources;
 
 namespace LVFS.Filesystem
@@ -56,7 +58,7 @@ namespace LVFS.Filesystem
 		{
 			for (int i = mSources.Count - 1; i >= 0; i--)
 			{
-				if (mSources[i].HasFile(fileName))
+				if (mSources[i].ControlsFile(fileName))
 					return mSources[i];
 			}
 			return null;
@@ -67,7 +69,7 @@ namespace LVFS.Filesystem
 		/// </summary>
 		/// <param name="path">The directory to list the contents of</param>
 		/// <returns>A list of file information about the directory contents, or null if the directory does not exist within the VFS</returns>
-		public IList<DokanNet.FileInformation> ListFiles(string path)
+		public IList<FileInformation> ListFiles(string path)
 		{
 
 
