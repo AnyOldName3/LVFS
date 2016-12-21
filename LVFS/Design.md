@@ -102,7 +102,9 @@
 * FindStreams
 	- Not implemented in Mirror example
 * FlushFileBuffers
-	- In Mirror is simply ```cs
+	- In Mirror is simply
+	
+	```cs
 	((FileStream) (info.Context)).Flush();
 	```
 * SetAllocationSize
