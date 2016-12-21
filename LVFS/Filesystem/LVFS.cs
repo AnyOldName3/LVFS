@@ -96,7 +96,16 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetFileSecurity(string fileName, out FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				security = selector.GetFileSystemSecurity(fileName, sections);
+				return security != null ? DokanResult.Success : DokanResult.FileNotFound;
+			}
+			catch(UnauthorizedAccessException ex)
+			{
+				security = null;
+				return DokanResult.AccessDenied;
+			}
 		}
 
 		public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)

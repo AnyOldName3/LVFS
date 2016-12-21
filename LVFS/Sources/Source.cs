@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.AccessControl;
 
 using DokanNet;
 
@@ -72,5 +73,14 @@ namespace LVFS.Sources
 		/// </summary>
 		/// <returns>A tuple of the free, total and available bytes of space for the source's storage medium</returns>
 		public abstract Tuple<long, long, long> GetSpaceInformation();
+
+		/// <summary>
+		/// Gets a FileSystemSecurity object representing security information for the requested path, filtered to only include the specified sections. Returns null if the file cannot be found, and throws an UnauthorisedAccessException if the OS denies access to the data requested.
+		/// </summary>
+		/// <param name="path">The path to the file security information is to be returned for</param>
+		/// <param name="sections">The access sections to return</param>
+		/// <returns>The requested sections of security information for the requested file</returns>
+		/// <exception cref="UnauthorizedAccessException">Thrown if the OS denies access to the data requested.</exception>
+		public abstract FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections);
 	}
 }

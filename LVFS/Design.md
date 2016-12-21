@@ -80,6 +80,7 @@
 * GetFileInformation
 	- Done
 * GetFileSecurity
+	- Done
 * GetVolumeInformation
 * ReadFile
 
