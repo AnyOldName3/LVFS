@@ -82,6 +82,7 @@
 * GetFileSecurity
 	- Done
 * GetVolumeInformation
+	- Done
 * ReadFile
 
 ##Write

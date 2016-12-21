@@ -12,7 +12,16 @@ namespace LVFS.Filesystem
 {
 	class LVFS : IDokanOperations
 	{
-		private Selector selector;
+		private Selector mSelector;
+
+		private string mVolumeLabel, mFileSystemName;
+
+		public LVFS(Selector selector, string volumeLabel, string fileSystemName)
+		{
+			mSelector = selector;
+			mVolumeLabel = volumeLabel;
+			mFileSystemName = fileSystemName;
+		}
 
 		public void Cleanup(string fileName, DokanFileInfo info)
 		{
@@ -41,7 +50,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
 		{
-			files = selector.ListFiles(fileName);
+			files = mSelector.ListFiles(fileName);
 
 			return files != null ? DokanResult.Success : DokanResult.FileNotFound;
 		}
@@ -66,7 +75,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
 		{
-			Tuple<long, long, long> sizes = selector.GetSpaceInformation();
+			Tuple<long, long, long> sizes = mSelector.GetSpaceInformation();
 
 			if (sizes != null)
 			{
@@ -86,7 +95,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)
 		{
-			FileInformation? returned = selector.GetFileInformation(fileName);
+			FileInformation? returned = mSelector.GetFileInformation(fileName);
 
 			NtStatus returnCode = returned != null ? DokanResult.Success : DokanResult.FileNotFound;
 			fileInfo = returned ?? new FileInformation();
@@ -98,7 +107,7 @@ namespace LVFS.Filesystem
 		{
 			try
 			{
-				security = selector.GetFileSystemSecurity(fileName, sections);
+				security = mSelector.GetFileSystemSecurity(fileName, sections);
 				return security != null ? DokanResult.Success : DokanResult.FileNotFound;
 			}
 			catch(UnauthorizedAccessException ex)
@@ -110,7 +119,16 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetVolumeInformation(out string volumeLabel, out FileSystemFeatures features, out string fileSystemName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			volumeLabel = mVolumeLabel;
+			fileSystemName = mFileSystemName;
+
+			// Values copied from DokenNet's Mirror example
+			features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;
+
+			// Write operations are not yet implemented
+			features |= FileSystemFeatures.ReadOnlyVolume;
+
+			return DokanResult.Success;
 		}
 
 		public NtStatus LockFile(string fileName, long offset, long length, DokanFileInfo info)

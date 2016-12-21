@@ -42,13 +42,14 @@ namespace LVFS.Filesystem
 		/// Adds an additional Source to the LVFS as the highest priority Source
 		/// </summary>
 		/// <param name="source">The Source to add</param>
-		public void addSource(Source source)
+		public void AddSource(Source source)
 		{
 			if (source == null)
 				throw new ArgumentNullException("source");
 			mSources.Add(source);
-			mOutputSource = source;
 		}
+
+		public bool HasWritableSource { get { return mOutputSource != null; } }
 
 		/// <summary>
 		/// Gets the source responsible for a file/directory
