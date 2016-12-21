@@ -72,9 +72,12 @@
 
 ##Read
 * FindFiles
+	- Done
 * FindFilesWithPattern
+	- Skipped
 * GetDiskFreeSpace
 * GetFileInformation
+	- Done
 * GetFileSecurity
 * GetVolumeInformation
 * ReadFile
