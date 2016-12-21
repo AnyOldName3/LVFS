@@ -67,3 +67,43 @@
 * Actually reads from/writes to files (or whatever)
 * Implementations could be directories, archives etc.
 * Extra interfaces specify bonus behaviour.
+
+#IDokanOperations
+
+##Read
+* FindFiles
+* FindFilesWithPattern
+* GetDiskFreeSpace
+* GetFileInformation
+* GetFileSecurity
+* GetVolumeInformation
+* ReadFile
+
+##Write
+* DeleteDirectory
+* DeleteFile
+* MoveFile
+* SetEndOfFile
+* SetFileAttributes
+* SetFileSecurity
+* SetFileTime
+* WriteFile
+
+##Other
+* Cleanup
+* CloseFile
+* CreateFile
+* LockFile
+* Mounted
+* UnlockFile
+
+
+##Unknown
+* FindStreams
+	- Not implemented in Mirror example
+* FlushFileBuffers
+	- In Mirror is simply ```C#
+	((FileStream) (info.Context)).Flush();
+	```
+* SetAllocationSize
+	- in Mirror, calls `FileStream.SetLength`
