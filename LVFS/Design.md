@@ -76,6 +76,7 @@
 * FindFilesWithPattern
 	- Skipped
 * GetDiskFreeSpace
+	- Done
 * GetFileInformation
 	- Done
 * GetFileSecurity

@@ -66,7 +66,22 @@ namespace LVFS.Filesystem
 
 		public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			Tuple<long, long, long> sizes = selector.GetSpaceInformation();
+
+			if (sizes != null)
+			{
+				freeBytesAvailable = sizes.Item3;
+				totalNumberOfBytes = sizes.Item2;
+				totalNumberOfFreeBytes = sizes.Item1;
+
+				return DokanResult.Success;
+			}
+			else
+			{
+				freeBytesAvailable = totalNumberOfBytes = totalNumberOfFreeBytes = 0;
+
+				return DokanResult.Unsuccessful;
+			}
 		}
 
 		public NtStatus GetFileInformation(string fileName, out FileInformation fileInfo, DokanFileInfo info)

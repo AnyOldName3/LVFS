@@ -78,5 +78,14 @@ namespace LVFS.Filesystem
 		{
 			return mSources.Last<Source>().GetFileInformation(path);
 		}
+
+		/// <summary>
+		/// If there exists a writable source, returns a tuple of the free, total and available space for the storage medium holding the output source. Otherwise, returns null.
+		/// </summary>
+		/// <returns>A tuple of the free, total and available bytes of space for the output source's storage medium</returns>
+		public Tuple<long, long, long> GetSpaceInformation()
+		{
+			return mOutputSource.GetSpaceInformation();
+		}
 	}
 }

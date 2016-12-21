@@ -66,5 +66,11 @@ namespace LVFS.Sources
 		/// <param name="path">The file path to get the information for</param>
 		/// <returns>A nullable FileInformation struct for the requested file.</returns>
 		public abstract FileInformation? GetFileInformation(string path);
+
+		/// <summary>
+		/// If the source is writable, returns a tuple of the free, total and available space for the storage medium holding the current source. Otherwise, returns null.
+		/// </summary>
+		/// <returns>A tuple of the free, total and available bytes of space for the source's storage medium</returns>
+		public abstract Tuple<long, long, long> GetSpaceInformation();
 	}
 }
