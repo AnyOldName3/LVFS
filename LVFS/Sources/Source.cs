@@ -82,5 +82,23 @@ namespace LVFS.Sources
 		/// <returns>The requested sections of security information for the requested file</returns>
 		/// <exception cref="UnauthorizedAccessException">Thrown if the OS denies access to the data requested.</exception>
 		public abstract FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections);
+
+		/// <summary>
+		/// Called when a filesystem including the source is mounted.
+		/// </summary>
+		/// <returns>A boolean representing whether the source was capable of being mounted.</returns>
+		public virtual bool OnMount()
+		{
+			return true;
+		}
+
+		/// <summary>
+		/// Called when a filesystem including the source is unmounted.
+		/// </summary>
+		/// <returns>A boolean representing whether the source was capable of being unmounted.</returns>
+		public virtual bool OnUnmount()
+		{
+			return true;
+		}
 	}
 }

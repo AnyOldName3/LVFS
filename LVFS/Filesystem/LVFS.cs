@@ -124,9 +124,9 @@ namespace LVFS.Filesystem
 
 			// Values copied from DokenNet's Mirror example
 			features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;
-
-			// Write operations are not yet implemented
-			features |= FileSystemFeatures.ReadOnlyVolume;
+			
+			if (! mSelector.HasWritableSource)
+				features |= FileSystemFeatures.ReadOnlyVolume;
 
 			return DokanResult.Success;
 		}
@@ -138,7 +138,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus Mounted(DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return mSelector.OnMount() ? DokanResult.Success : DokanResult.Unsuccessful;
 		}
 
 		public NtStatus MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
@@ -183,7 +183,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus Unmounted(DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return mSelector.OnUnmount() ? DokanResult.Success : DokanResult.Unsuccessful;
 		}
 
 		public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)

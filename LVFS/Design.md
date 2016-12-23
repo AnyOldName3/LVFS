@@ -101,8 +101,10 @@
 * CreateFile
 * LockFile
 * Mounted
+	- Done
 * UnlockFile
-
+* Unmounted
+	- Done
 
 ##Unknown
 * FindStreams

@@ -101,5 +101,29 @@ namespace LVFS.Filesystem
 		{
 			return mSources.Last<Source>().GetFileSystemSecurity(path, sections);
 		}
+
+		/// <summary>
+		/// Called when a filesystem using this selector is mounted
+		/// </summary>
+		/// <returns>A boolean representing whether all sources were capable of being mounted.</returns>
+		public bool OnMount()
+		{
+			bool success = true;
+			for (int i = mSources.Count - 1; i >= 0; i--)
+				success &= mSources[i].OnMount();
+			return success;
+		}
+
+		/// <summary>
+		/// Called when a filesystem using this selector is unmounted
+		/// </summary>
+		/// <returns>A boolean representing whether all sources were capable of being unmounted.</returns>
+		public bool OnUnmount()
+		{
+			bool success = true;
+			for (int i = mSources.Count - 1; i >= 0; i--)
+				success &= mSources[i].OnUnmount();
+			return success;
+		}
 	}
 }
