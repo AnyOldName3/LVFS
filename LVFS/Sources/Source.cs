@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -100,5 +101,18 @@ namespace LVFS.Sources
 		{
 			return true;
 		}
+
+		/// <summary>
+		/// Called when a file handle is requested
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="access">The type of access required</param>
+		/// <param name="share">The kind of access other filestreams can have</param>
+		/// <param name="mode">The mode to open the file in</param>
+		/// <param name="options">Advanced options for creating a FileStream</param>
+		/// <param name="attributes">The attributes of the file</param>
+		/// <param name="dokanFileInfo">A DokanFileInfo containing the context for the file handle and information on the file</param>
+		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
+		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo dokanFileInfo);
 	}
 }
