@@ -65,7 +65,8 @@ namespace LVFS.Filesystem
 
 		public NtStatus FindStreams(string fileName, out IList<FileInformation> streams, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			streams = null;
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus FlushFileBuffers(string fileName, DokanFileInfo info)
