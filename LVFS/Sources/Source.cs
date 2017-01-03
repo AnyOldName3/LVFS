@@ -111,8 +111,8 @@ namespace LVFS.Sources
 		/// <param name="mode">The mode to open the file in</param>
 		/// <param name="options">Advanced options for creating a FileStream</param>
 		/// <param name="attributes">The attributes of the file</param>
-		/// <param name="dokanFileInfo">A DokanFileInfo containing the context for the file handle and information on the file</param>
+		/// <param name="info">A LVFSInfo containing the context for the file handle and information on the file.</param>
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
-		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo dokanFileInfo);
+		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSInfo info);
 	}
 }

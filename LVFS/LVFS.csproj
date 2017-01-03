@@ -52,6 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Filesystem\LVFS.cs" />
+    <Compile Include="Filesystem\LVFSInfo.cs" />
     <Compile Include="Filesystem\Reader.cs" />
     <Compile Include="Filesystem\Selector.cs" />
     <Compile Include="Filesystem\Writer.cs" />
