@@ -89,6 +89,8 @@
 * DeleteDirectory
 * DeleteFile
 * MoveFile
+* SetAllocationSize
+	- in Mirror, calls `FileStream.SetLength`
 * SetEndOfFile
 * SetFileAttributes
 * SetFileSecurity
@@ -100,14 +102,6 @@
 * CloseFile
 * CreateFile
 	- Done
-* LockFile
-* Mounted
-	- Done
-* UnlockFile
-* Unmounted
-	- Done
-
-##Unknown
 * FindStreams
 	- Not implemented in Mirror example
 	- Done ?
@@ -117,5 +111,9 @@
 	```cs
 	((FileStream) (info.Context)).Flush();
 	```
-* SetAllocationSize
-	- in Mirror, calls `FileStream.SetLength`
+* LockFile
+* Mounted
+	- Done
+* UnlockFile
+* Unmounted
+	- Done
