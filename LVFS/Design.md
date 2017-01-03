@@ -84,6 +84,7 @@
 * GetVolumeInformation
 	- Done
 * ReadFile
+	- Done
 
 ##Write
 * DeleteDirectory

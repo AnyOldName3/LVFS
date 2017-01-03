@@ -141,5 +141,19 @@ namespace LVFS.Filesystem
 		{
 			return mSources.Last<Source>().CreateFileHandle(path, access, share, mode, options, attributes, info);
 		}
+
+		/// <summary>
+		/// Gets the contents of the specified file starting at the specified offset and attempts to fill the buffer.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="buffer">The buffer to fill with the file contents</param>
+		/// <param name="bytesRead">The actual number of bytes read from the file. This may be less than the length of the buffer if not enough data is available.</param>
+		/// <param name="offset">The byte at which to start reading.</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>A bool indicating whether the operation was successful</returns>
+		public bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSInfo info)
+		{
+			return mSources.Last<Source>().ReadFile(path, buffer, out bytesRead, offset, info);
+		}
 	}
 }

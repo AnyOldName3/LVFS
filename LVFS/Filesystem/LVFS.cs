@@ -149,7 +149,8 @@ namespace LVFS.Filesystem
 
 		public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			bool success = mSelector.ReadFile(fileName, buffer, out bytesRead, offset, new LVFSInfo(info));
+			return success ? DokanResult.Success : DokanResult.Unsuccessful;
 		}
 
 		public NtStatus SetAllocationSize(string fileName, long length, DokanFileInfo info)
