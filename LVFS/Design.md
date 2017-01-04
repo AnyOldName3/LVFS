@@ -107,7 +107,7 @@
 	- Done
 * FindStreams
 	- Not implemented in Mirror example
-	- Done ?
+	- Skipped
 * FlushFileBuffers
 	- In Mirror is simply
 	
