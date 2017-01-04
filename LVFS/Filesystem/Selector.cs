@@ -17,7 +17,7 @@ namespace LVFS.Filesystem
 	class Selector
 	{
 		private IList<Source> mSources;
-		private Source mOutputSource;
+		private Source Last { get { return mSources.Last<Source>(); } }
 
 		/// <summary>
 		/// Constructs a new Selector with a list of Sources
@@ -26,7 +26,6 @@ namespace LVFS.Filesystem
 		public Selector(IList<Source> sources)
 		{
 			mSources = new List<Source>(sources);
-			mOutputSource = mSources.Last<Source>();
 		}
 
 		/// <summary>
@@ -35,7 +34,6 @@ namespace LVFS.Filesystem
 		public Selector()
 		{
 			mSources = new List<Source>();
-			mOutputSource = null;
 		}
 
 		/// <summary>
@@ -49,7 +47,7 @@ namespace LVFS.Filesystem
 			mSources.Add(source);
 		}
 
-		public bool HasWritableSource { get { return mOutputSource != null; } }
+		public bool HasWritableSource { get { return Last.GetType().IsSubclassOf(typeof(WritableSource)); } }
 
 		/// <summary>
 		/// Gets the source responsible for a file/directory
@@ -73,12 +71,12 @@ namespace LVFS.Filesystem
 		/// <returns>A list of file information about the directory contents, or null if the directory does not exist within the VFS</returns>
 		public IList<FileInformation> ListFiles(string path)
 		{
-			return mSources.Last<Source>().ListFiles(path);
+			return Last.ListFiles(path);
 		}
 
 		public FileInformation? GetFileInformation(string path)
 		{
-			return mSources.Last<Source>().GetFileInformation(path);
+			return Last.GetFileInformation(path);
 		}
 
 		/// <summary>
@@ -87,7 +85,7 @@ namespace LVFS.Filesystem
 		/// <returns>A tuple of the free, total and available bytes of space for the output source's storage medium</returns>
 		public Tuple<long, long, long> GetSpaceInformation()
 		{
-			return mOutputSource != null? mOutputSource.GetSpaceInformation() : null;
+			return Last.GetSpaceInformation();
 		}
 
 		/// <summary>
@@ -99,7 +97,7 @@ namespace LVFS.Filesystem
 		/// <exception cref="UnauthorizedAccessException">Thrown if the OS denies access to the data requested.</exception>
 		public FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections)
 		{
-			return mSources.Last<Source>().GetFileSystemSecurity(path, sections);
+			return Last.GetFileSystemSecurity(path, sections);
 		}
 
 		/// <summary>
@@ -139,7 +137,7 @@ namespace LVFS.Filesystem
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists is returned.</returns>
 		public NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, System.IO.FileAttributes attributes, LVFSContextInfo info)
 		{
-			return mSources.Last<Source>().CreateFileHandle(path, access, share, mode, options, attributes, info);
+			return Last.CreateFileHandle(path, access, share, mode, options, attributes, info);
 		}
 
 		/// <summary>
@@ -150,7 +148,7 @@ namespace LVFS.Filesystem
 		/// <returns>True if the operation was successful</returns>
 		public bool CleanupFileHandle(string path, LVFSContextInfo info)
 		{
-			return mSources.Last<Source>().CleanupFileHandle(path, info);
+			return Last.CleanupFileHandle(path, info);
 		}
 
 		/// <summary>
@@ -161,7 +159,7 @@ namespace LVFS.Filesystem
 		/// <returns>True if the operation was successful</returns>
 		public bool CloseFileHandle(string path, LVFSContextInfo info)
 		{
-			return mSources.Last<Source>().CloseFileHandle(path, info);
+			return Last.CloseFileHandle(path, info);
 		}
 
 		/// <summary>
@@ -175,7 +173,7 @@ namespace LVFS.Filesystem
 		/// <returns>A bool indicating whether the operation was successful</returns>
 		public bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
-			return mSources.Last<Source>().ReadFile(path, buffer, out bytesRead, offset, info);
+			return Last.ReadFile(path, buffer, out bytesRead, offset, info);
 		}
 	}
 }
