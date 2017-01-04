@@ -9,7 +9,7 @@ using DokanNet;
 
 namespace LVFS.Filesystem
 {
-	class LVFSInfo
+	class LVFSContextInfo
 	{
 		public IDictionary<Sources.Source, object> Context { get; private set; }
 		public bool DeleteOnClose { get; private set; }
@@ -23,7 +23,7 @@ namespace LVFS.Filesystem
 		public Func<WindowsIdentity> GetRequestor { get; private set; }
 		public Func<int, bool> TryResetTimeout { get; private set; }
 
-		public LVFSInfo(DokanFileInfo info)
+		public LVFSContextInfo(DokanFileInfo info)
 		{
 			Context = (IDictionary<Sources.Source, object>)info.Context;
 			DeleteOnClose = info.DeleteOnClose;

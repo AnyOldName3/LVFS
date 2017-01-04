@@ -25,17 +25,17 @@ namespace LVFS.Filesystem
 
 		public void Cleanup(string fileName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			mSelector.CleanupFileHandle(fileName, new LVFSContextInfo(info));
 		}
 
 		public void CloseFile(string fileName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			mSelector.CloseFileHandle(fileName, new LVFSContextInfo(info));
 		}
 
 		public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo info)
 		{
-			return mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, new LVFSInfo(info));
+			return mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, new LVFSContextInfo(info));
 		}
 
 		public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
@@ -149,7 +149,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
 		{
-			bool success = mSelector.ReadFile(fileName, buffer, out bytesRead, offset, new LVFSInfo(info));
+			bool success = mSelector.ReadFile(fileName, buffer, out bytesRead, offset, new LVFSContextInfo(info));
 			return success ? DokanResult.Success : DokanResult.Unsuccessful;
 		}
 

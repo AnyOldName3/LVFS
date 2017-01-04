@@ -47,7 +47,45 @@ namespace LVFS.Sources
 		{
 			return mPredecessor.GetFileInformation(path);
 		}
-		
+
+		/// <summary>
+		/// As with CreateFileHandle, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="access">The type of access required</param>
+		/// <param name="share">The kind of access other filestreams can have</param>
+		/// <param name="mode">The mode to open the file in</param>
+		/// <param name="options">Advanced options for creating a FileStream</param>
+		/// <param name="attributes">The attributes of the file</param>
+		/// <param name="info">A LVFSInfo containing the context for the file handle and information on the file.</param>
+		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
+		protected NtStatus PredecessorCreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.CreateFileHandle(path, access, share, mode, options, attributes, info);
+		}
+
+		/// <summary>
+		/// As with CleanupFileHandle, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context</param>
+		/// <returns>True if the operation is successful</returns>
+		protected bool PredecessorCleanupFileHandle(string path, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.CleanupFileHandle(path, info);
+		}
+
+		/// <summary>
+		/// As with CloseFileHandle, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context</param>
+		/// <returns>True if the operation is successful</returns>
+		protected bool PredecessorCloseFileHandle(string path, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.CloseFileHandle(path, info);
+		}
+
 		/// <summary>
 		/// Gets whether or not this source controls the specified file
 		/// </summary>
@@ -113,7 +151,23 @@ namespace LVFS.Sources
 		/// <param name="attributes">The attributes of the file</param>
 		/// <param name="info">A LVFSInfo containing the context for the file handle and information on the file.</param>
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
-		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSInfo info);
+		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info);
+
+		/// <summary>
+		/// Called when the last handle for a file has been closed, but not necessarily released. This is an appropriate place to delete the file if DeleteOnClose is set. This must recursively call the predecessor version if the predecessor source may have been invloved in any operations with this context.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context</param>
+		/// <returns>True if the operation is successful</returns>
+		public abstract bool CleanupFileHandle(string path, Filesystem.LVFSContextInfo info);
+
+		/// <summary>
+		/// Called once the last handle for a file has been closed and released. <paramref name="info"/>.Context will be lost after this method returns, so must be ready for this. This must recursively call the predecessor version if the predecessor source may have been invloved in any operations with this context.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context</param>
+		/// <returns>True if the operation was successful</returns>
+		public abstract bool CloseFileHandle(string path, Filesystem.LVFSContextInfo info);
 
 		/// <summary>
 		/// Gets the contents of the specified file starting at the specified offset and attempts to fill the buffer.
@@ -124,6 +178,6 @@ namespace LVFS.Sources
 		/// <param name="offset">The byte at which to start reading.</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>A bool indicating whether the operation was successful</returns>
-		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSInfo info);
+		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info);
 	}
 }

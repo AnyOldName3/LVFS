@@ -100,7 +100,9 @@
 
 ##Other
 * Cleanup
+	- Done
 * CloseFile
+	- Done
 * CreateFile
 	- Done
 * FindStreams

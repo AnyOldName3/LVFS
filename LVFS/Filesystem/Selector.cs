@@ -137,9 +137,31 @@ namespace LVFS.Filesystem
 		/// <param name="attributes">The attributes of the file</param>
 		/// <param name="info">An LVFSinfo containing the context for the file handle and information on the file</param>
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists is returned.</returns>
-		public NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, System.IO.FileAttributes attributes, LVFSInfo info)
+		public NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, System.IO.FileShare share, System.IO.FileMode mode, System.IO.FileOptions options, System.IO.FileAttributes attributes, LVFSContextInfo info)
 		{
 			return mSources.Last<Source>().CreateFileHandle(path, access, share, mode, options, attributes, info);
+		}
+
+		/// <summary>
+		/// To be called when a file handle and context have been closed, but not necessarily released. If <paramref name="info"/>.DeleteOnClose is true, then this is where the file is actually deleted.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context of this operation</param>
+		/// <returns>True if the operation was successful</returns>
+		public bool CleanupFileHandle(string path, LVFSContextInfo info)
+		{
+			return mSources.Last<Source>().CleanupFileHandle(path, info);
+		}
+
+		/// <summary>
+		/// To be called once all file handles for this context have been closed and released.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="info">The information for the context of this operation</param>
+		/// <returns>True if the operation was successful</returns>
+		public bool CloseFileHandle(string path, LVFSContextInfo info)
+		{
+			return mSources.Last<Source>().CloseFileHandle(path, info);
 		}
 
 		/// <summary>
@@ -151,7 +173,7 @@ namespace LVFS.Filesystem
 		/// <param name="offset">The byte at which to start reading.</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>A bool indicating whether the operation was successful</returns>
-		public bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSInfo info)
+		public bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			return mSources.Last<Source>().ReadFile(path, buffer, out bytesRead, offset, info);
 		}
