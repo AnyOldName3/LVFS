@@ -122,3 +122,17 @@
 	- Done
 * Unmounted
 	- Done
+
+#ReadOnlyDirectoryMirror
+
+* CleanupFileHandle
+* CloseFileHandle
+* ControlsFile
+* CreateFileHandle
+* GetFileInformation
+* GetFileSystemSecurity
+* GetSpaceInformation
+* ListFiles
+* ReadFile
+* TryLockFileRegion
+* TryUnlockFileRegion
