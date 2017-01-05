@@ -52,7 +52,13 @@ namespace LVFS.Sources.DirectoryMirror
 			{
 				fileInfo = new DirectoryInfo(filePath);
 				if (!fileInfo.Exists)
-					return null;
+				{
+					// This source has not got the requested file.
+					if (!IsFirst)
+						return GetPredecessorFileInformation(path);
+					else
+						return null;
+				}
 			}
 
 			return new FileInformation
@@ -68,7 +74,15 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections)
 		{
-			throw new NotImplementedException();
+			string fullPath = ConvertPath(path);
+			if (Directory.Exists(fullPath))
+				return (FileSystemSecurity)Directory.GetAccessControl(fullPath, sections);
+			else if (File.Exists(fullPath))
+				return File.GetAccessControl(fullPath, sections);
+			else if (!IsFirst)
+				return GetPredecessorFileSystemSecurity(path, sections);
+			else
+				return null;
 		}
 
 		public override Tuple<long, long, long> GetSpaceInformation()

@@ -74,13 +74,18 @@ namespace LVFS.Filesystem
 			return Last.ListFiles(path);
 		}
 
+		/// <summary>
+		/// Gets file information for the file with the specified path (if it exists), or null otherwise.
+		/// </summary>
+		/// <param name="path">The file path to get the information for</param>
+		/// <returns>A nullable FileInformation struct for the requested file.</returns>
 		public FileInformation? GetFileInformation(string path)
 		{
 			return Last.GetFileInformation(path);
 		}
 
 		/// <summary>
-		/// If there exists a writable source, returns a tuple of the free, total and available space for the storage medium holding the output source. Otherwise, returns null.
+		/// If possible, returns a tuple of the free, total and available space for the storage medium holding the output source. Otherwise, returns null.
 		/// </summary>
 		/// <returns>A tuple of the free, total and available bytes of space for the output source's storage medium</returns>
 		public Tuple<long, long, long> GetSpaceInformation()

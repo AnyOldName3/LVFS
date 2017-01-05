@@ -49,6 +49,18 @@ namespace LVFS.Sources
 		}
 
 		/// <summary>
+		/// As with GetFileSystemSecurity, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file security information is to be returned for</param>
+		/// <param name="sections">The access sections to return</param>
+		/// <returns>The requested sections of security information for the requested file</returns>
+		/// <exception cref="UnauthorizedAccessException">Thrown if the OS denies access to the data requested.</exception>
+		protected FileSystemSecurity GetPredecessorFileSystemSecurity(string path, AccessControlSections sections)
+		{
+			return mPredecessor.GetFileSystemSecurity(path, sections);
+		}
+
+		/// <summary>
 		/// As with CreateFileHandle, but for the predecessor source.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
@@ -87,6 +99,46 @@ namespace LVFS.Sources
 		}
 
 		/// <summary>
+		/// As with ReadFile, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="buffer">The buffer to fill with the file contents</param>
+		/// <param name="bytesRead">The actual number of bytes read from the file. This may be less than the length of the buffer if not enough data is available.</param>
+		/// <param name="offset">The byte at which to start reading.</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>A bool indicating whether the operation was successful</returns>
+		protected bool PredecessorReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.ReadFile(path, buffer, out bytesRead, offset, info);
+		}
+
+		/// <summary>
+		/// As with TryLockFileRegion, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="startOffset">The offset at which the region to lock starts</param>
+		/// <param name="length">The length of the region to lock</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>True if the operation was successful, false if access was denied</returns>
+		protected bool PredecessorTryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.TryLockFileRegion(path, startOffset, length, info);
+		}
+
+		/// <summary>
+		/// As with TryUnlockFileRegion, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="startOffset">The offset at which the region to unlock starts</param>
+		/// <param name="length">The length of the region to unlock</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>True if the operation was successful, false if access was denied</returns>
+		protected bool PredecessorTryUnlockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
+		{
+			return mPredecessor.TryUnlockFileRegion(path, startOffset, length, info);
+		}
+
+		/// <summary>
 		/// Gets whether or not this source controls the specified file
 		/// </summary>
 		/// <param name="path">The file path being queried</param>
@@ -94,27 +146,27 @@ namespace LVFS.Sources
 		public abstract bool ControlsFile(string path);
 
 		/// <summary>
-		/// Lists the files and subdirectories contained within a given directory
+		/// Lists the files and subdirectories contained within a given directory, including those of the predecessor source.
 		/// </summary>
 		/// <param name="path">The directory to list the contents of</param>
 		/// <returns>A list of files in the given directory when this source and all lower priority sources have been considered.</returns>
 		public abstract IList<FileInformation> ListFiles(string path);
 
 		/// <summary>
-		/// Gets file information for the file with the specified path (if it exists), or null otherwise.
+		/// Gets file information for the file with the specified path (if it exists in this source or a predecessor), or null otherwise.
 		/// </summary>
 		/// <param name="path">The file path to get the information for</param>
 		/// <returns>A nullable FileInformation struct for the requested file.</returns>
 		public abstract FileInformation? GetFileInformation(string path);
 
 		/// <summary>
-		/// If the source is writable, returns a tuple of the free, total and available space for the storage medium holding the current source. Otherwise, returns null.
+		/// If possible, returns a tuple of the free, total and available space for the storage medium holding the current source. Otherwise, returns null.
 		/// </summary>
 		/// <returns>A tuple of the free, total and available bytes of space for the source's storage medium</returns>
 		public abstract Tuple<long, long, long> GetSpaceInformation();
 
 		/// <summary>
-		/// Gets a FileSystemSecurity object representing security information for the requested path, filtered to only include the specified sections. Returns null if the file cannot be found, and throws an UnauthorisedAccessException if the OS denies access to the data requested.
+		/// Gets a FileSystemSecurity object representing security information for the requested path, filtered to only include the specified sections. Returns null if the file cannot be found in this or a predecessor source, and throws an UnauthorisedAccessException if the OS denies access to the data requested.
 		/// </summary>
 		/// <param name="path">The path to the file security information is to be returned for</param>
 		/// <param name="sections">The access sections to return</param>
@@ -141,7 +193,7 @@ namespace LVFS.Sources
 		}
 
 		/// <summary>
-		/// Called when a file handle is requested
+		/// Called when a file handle is requested. If this is an inappropriate action for this source, the request is passed on to the predecessor.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
 		/// <param name="access">The type of access required</param>
@@ -170,7 +222,7 @@ namespace LVFS.Sources
 		public abstract bool CloseFileHandle(string path, Filesystem.LVFSContextInfo info);
 
 		/// <summary>
-		/// Gets the contents of the specified file starting at the specified offset and attempts to fill the buffer.
+		/// Gets the contents of the specified file starting at the specified offset and attempts to fill the buffer. If this is an inappropriate action for this source, the request is passed on to the predecessor.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
 		/// <param name="buffer">The buffer to fill with the file contents</param>
@@ -181,7 +233,7 @@ namespace LVFS.Sources
 		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info);
 
 		/// <summary>
-		/// Locks a region of the specified file from the specified offset with the specified length if possible. The region is either entirely locked or entirely unlocked at the end of the operation.
+		/// Locks a region of the specified file from the specified offset with the specified length if possible. The region is either entirely locked or entirely unlocked at the end of the operation. If this is an inappropriate action for this source, the request is passed on to the predecessor.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
 		/// <param name="startOffset">The offset at which the region to lock starts</param>
@@ -191,7 +243,7 @@ namespace LVFS.Sources
 		public abstract bool TryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info);
 
 		/// <summary>
-		/// Unlocks a region of the specified file from the specified offset with the specified length if possible.
+		/// Unlocks a region of the specified file from the specified offset with the specified length if possible. If this is an inappropriate action for this source, the request is passed on to the predecessor.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
 		/// <param name="startOffset">The offset at which the region to unlock starts</param>
