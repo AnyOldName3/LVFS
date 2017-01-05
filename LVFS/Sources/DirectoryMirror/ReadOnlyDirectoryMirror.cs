@@ -81,6 +81,11 @@ namespace LVFS.Sources.DirectoryMirror
 			throw new NotImplementedException();
 		}
 
+		public override bool OnMount()
+		{
+			return Directory.Exists(DirectoryPath);
+		}
+
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			throw new NotImplementedException();
