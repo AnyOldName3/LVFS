@@ -134,7 +134,12 @@ namespace LVFS.Filesystem
 
 		public NtStatus LockFile(string fileName, long offset, long length, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			bool success = mSelector.TryLockFileRegion(fileName, offset, length, new LVFSContextInfo(info));
+
+			if (success)
+				return DokanResult.Success;
+			else
+				return DokanResult.AccessDenied;
 		}
 
 		public NtStatus Mounted(DokanFileInfo info)
@@ -180,7 +185,12 @@ namespace LVFS.Filesystem
 
 		public NtStatus UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			bool success = mSelector.TryUnlockFileRegion(fileName, offset, length, new LVFSContextInfo(info));
+
+			if (success)
+				return DokanResult.Success;
+			else
+				return DokanResult.AccessDenied;
 		}
 
 		public NtStatus Unmounted(DokanFileInfo info)

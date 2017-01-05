@@ -89,6 +89,12 @@
 ##Write
 * DeleteDirectory
 * DeleteFile
+* FlushFileBuffers
+	- In Mirror is simply
+	
+	```cs
+	((FileStream) (info.Context)).Flush();
+	```
 * MoveFile
 * SetAllocationSize
 	- in Mirror, calls `FileStream.SetLength`
@@ -108,15 +114,11 @@
 * FindStreams
 	- Not implemented in Mirror example
 	- Skipped
-* FlushFileBuffers
-	- In Mirror is simply
-	
-	```cs
-	((FileStream) (info.Context)).Flush();
-	```
 * LockFile
+	- Done
 * Mounted
 	- Done
 * UnlockFile
+	- Done
 * Unmounted
 	- Done

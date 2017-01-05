@@ -179,5 +179,25 @@ namespace LVFS.Sources
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>A bool indicating whether the operation was successful</returns>
 		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info);
+
+		/// <summary>
+		/// Locks a region of the specified file from the specified offset with the specified length if possible. The region is either entirely locked or entirely unlocked at the end of the operation.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="startOffset">The offset at which the region to lock starts</param>
+		/// <param name="length">The length of the region to lock</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>True if the operation was successful, false if access was denied</returns>
+		public abstract bool TryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info);
+
+		/// <summary>
+		/// Unlocks a region of the specified file from the specified offset with the specified length if possible.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="startOffset">The offset at which the region to unlock starts</param>
+		/// <param name="length">The length of the region to unlock</param>
+		/// <param name="info">Holds the context for the operation and relevant information</param>
+		/// <returns>True if the operation was successful, false if access was denied</returns>
+		public abstract bool TryUnlockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info);
 	}
 }
