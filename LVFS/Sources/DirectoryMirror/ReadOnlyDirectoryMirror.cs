@@ -92,7 +92,31 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override IList<FileInformation> ListFiles(string path)
 		{
-			throw new NotImplementedException();
+			IList<FileInformation> predecessorList = ListPredecessorFiles(path);
+
+			HashSet<string> names = new HashSet<string>();
+			IList<FileInformation> thisList = new DirectoryInfo(ConvertPath(path)).GetFileSystemInfos().Select((fileInfo) =>
+			{
+				names.Add(fileInfo.Name);
+				return new FileInformation
+				{
+					FileName = fileInfo.Name,
+					Attributes = fileInfo.Attributes,
+					CreationTime = fileInfo.CreationTime,
+					LastAccessTime = fileInfo.LastAccessTime,
+					LastWriteTime = fileInfo.LastWriteTime,
+					Length = (fileInfo as FileInfo)?.Length ?? 0
+				};
+			}).ToArray();
+
+			IList<FileInformation> resultList = new List<FileInformation>(thisList);
+			foreach (FileInformation fileInfo in predecessorList)
+			{
+				if (!names.Contains(fileInfo.FileName))
+					resultList.Add(fileInfo);
+			}
+
+			return resultList;
 		}
 
 		public override bool OnMount()

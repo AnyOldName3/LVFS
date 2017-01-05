@@ -136,6 +136,7 @@
 	- Done
 * GetSpaceInformation
 * ListFiles
+	- Done
 * ReadFile
 * TryLockFileRegion
 * TryUnlockFileRegion
