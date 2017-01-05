@@ -128,8 +128,10 @@
 * CleanupFileHandle
 * CloseFileHandle
 * ControlsFile
+	- Done
 * CreateFileHandle
 * GetFileInformation
+	- Done
 * GetFileSystemSecurity
 * GetSpaceInformation
 * ListFiles

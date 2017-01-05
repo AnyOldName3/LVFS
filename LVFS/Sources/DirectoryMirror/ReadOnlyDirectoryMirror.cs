@@ -8,15 +8,20 @@ using System.Threading.Tasks;
 using DokanNet;
 using LVFS.Filesystem;
 
-namespace LVFS.Sources.Directory
+namespace LVFS.Sources.DirectoryMirror
 {
 	class ReadOnlyDirectoryMirror : Source
 	{
-		private string mDirectoryPath;
+		public string DirectoryPath { get; private set; }
 
 		public ReadOnlyDirectoryMirror(string path, Source predecessor) : base(predecessor)
 		{
-			mDirectoryPath = path;
+			DirectoryPath = path;
+		}
+
+		private string ConvertPath(string path)
+		{
+			return Path.Combine(DirectoryPath, path);
 		}
 
 		public override bool CleanupFileHandle(string path, LVFSContextInfo info)
@@ -31,7 +36,7 @@ namespace LVFS.Sources.Directory
 
 		public override bool ControlsFile(string path)
 		{
-			throw new NotImplementedException();
+			return File.Exists(ConvertPath(path)) || Directory.Exists(ConvertPath(path));
 		}
 
 		public override NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
@@ -41,7 +46,24 @@ namespace LVFS.Sources.Directory
 
 		public override FileInformation? GetFileInformation(string path)
 		{
-			throw new NotImplementedException();
+			var filePath = ConvertPath(path);
+			FileSystemInfo fileInfo = new FileInfo(filePath);
+			if (!fileInfo.Exists)
+			{
+				fileInfo = new DirectoryInfo(filePath);
+				if (!fileInfo.Exists)
+					return null;
+			}
+
+			return new FileInformation
+			{
+				FileName = path,
+				Attributes = fileInfo.Attributes,
+				CreationTime = fileInfo.CreationTime,
+				LastAccessTime = fileInfo.LastAccessTime,
+				LastWriteTime = fileInfo.LastWriteTime,
+				Length = (fileInfo as FileInfo)?.Length ?? 0
+			};
 		}
 
 		public override FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections)
