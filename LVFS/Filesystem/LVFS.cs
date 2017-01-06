@@ -35,7 +35,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo info)
 		{
-			return mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, new LVFSContextInfo(info));
+			LVFSContextInfo LVFSInfo = new LVFSContextInfo(info);
+			var result = mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, LVFSInfo);
+			info.Context = LVFSInfo.Context;
+			return result;
 		}
 
 		public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
