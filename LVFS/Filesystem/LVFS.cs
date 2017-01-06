@@ -114,7 +114,7 @@ namespace LVFS.Filesystem
 				security = mSelector.GetFileSystemSecurity(fileName, sections);
 				return security != null ? DokanResult.Success : DokanResult.FileNotFound;
 			}
-			catch(UnauthorizedAccessException ex)
+			catch(UnauthorizedAccessException)
 			{
 				security = null;
 				return DokanResult.AccessDenied;
