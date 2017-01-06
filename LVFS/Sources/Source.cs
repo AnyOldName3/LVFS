@@ -35,7 +35,10 @@ namespace LVFS.Sources
 		/// <returns>A list of file information structs.</returns>
 		protected IList<FileInformation> ListPredecessorFiles(string path)
 		{
-			return mPredecessor.ListFiles(path);
+			if (IsFirst)
+				return new List<FileInformation>();
+			else
+				return mPredecessor.ListFiles(path);
 		}
 
 		/// <summary>
@@ -45,7 +48,7 @@ namespace LVFS.Sources
 		/// <returns>A file information struct if the path corresponds to a file, or null if not.</returns>
 		protected FileInformation? GetPredecessorFileInformation(string path)
 		{
-			return mPredecessor.GetFileInformation(path);
+			return mPredecessor?.GetFileInformation(path) ?? null;
 		}
 
 		/// <summary>
@@ -53,11 +56,11 @@ namespace LVFS.Sources
 		/// </summary>
 		/// <param name="path">The path to the file security information is to be returned for</param>
 		/// <param name="sections">The access sections to return</param>
-		/// <returns>The requested sections of security information for the requested file</returns>
+		/// <returns>The requested sections of security information for the requested file. Null if it does not exist.</returns>
 		/// <exception cref="UnauthorizedAccessException">Thrown if the OS denies access to the data requested.</exception>
 		protected FileSystemSecurity GetPredecessorFileSystemSecurity(string path, AccessControlSections sections)
 		{
-			return mPredecessor.GetFileSystemSecurity(path, sections);
+			return mPredecessor?.GetFileSystemSecurity(path, sections) ?? null;
 		}
 
 		/// <summary>
@@ -73,7 +76,7 @@ namespace LVFS.Sources
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
 		protected NtStatus PredecessorCreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.CreateFileHandle(path, access, share, mode, options, attributes, info);
+			return mPredecessor?.CreateFileHandle(path, access, share, mode, options, attributes, info) ?? DokanResult.PathNotFound;
 		}
 
 		/// <summary>
@@ -84,7 +87,7 @@ namespace LVFS.Sources
 		/// <returns>True if the operation is successful</returns>
 		protected bool PredecessorCleanupFileHandle(string path, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.CleanupFileHandle(path, info);
+			return mPredecessor?.CleanupFileHandle(path, info) ?? true;
 		}
 
 		/// <summary>
@@ -95,7 +98,7 @@ namespace LVFS.Sources
 		/// <returns>True if the operation is successful</returns>
 		protected bool PredecessorCloseFileHandle(string path, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.CloseFileHandle(path, info);
+			return mPredecessor?.CloseFileHandle(path, info) ?? true;
 		}
 
 		/// <summary>
@@ -109,7 +112,13 @@ namespace LVFS.Sources
 		/// <returns>A bool indicating whether the operation was successful</returns>
 		protected bool PredecessorReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.ReadFile(path, buffer, out bytesRead, offset, info);
+			if (IsFirst)
+			{
+				bytesRead = 0;
+				return false;
+			}
+			else
+				return mPredecessor.ReadFile(path, buffer, out bytesRead, offset, info);
 		}
 
 		/// <summary>
@@ -122,7 +131,7 @@ namespace LVFS.Sources
 		/// <returns>True if the operation was successful, false if access was denied</returns>
 		protected bool PredecessorTryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.TryLockFileRegion(path, startOffset, length, info);
+			return mPredecessor?.TryLockFileRegion(path, startOffset, length, info) ?? false;
 		}
 
 		/// <summary>
@@ -135,7 +144,7 @@ namespace LVFS.Sources
 		/// <returns>True if the operation was successful, false if access was denied</returns>
 		protected bool PredecessorTryUnlockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor.TryUnlockFileRegion(path, startOffset, length, info);
+			return mPredecessor?.TryUnlockFileRegion(path, startOffset, length, info) ?? false;
 		}
 
 		/// <summary>
