@@ -41,7 +41,43 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			var filePath = ConvertPath(path);
+
+			if (info.IsDirectory)
+			{
+				try
+				{
+					switch (mode)
+					{
+						case FileMode.Open:
+							if (Directory.Exists(filePath))
+								return DokanResult.Success;
+							else if (File.Exists(filePath))
+								return NtStatus.NotADirectory;
+							else
+								return DokanResult.PathNotFound;
+
+						case FileMode.CreateNew:
+							if (Directory.Exists(filePath))
+								return DokanResult.AlreadyExists;
+							else if (File.Exists(filePath))
+								return DokanResult.FileExists;
+							else
+								return DokanResult.AccessDenied;
+
+						default:
+							throw new ArgumentException(mode.ToString(), "mode");
+					}
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+			}
+			else
+			{
+				return DokanResult.NotImplemented;
+			}
 		}
 
 		public override FileInformation? GetFileInformation(string path)
@@ -52,13 +88,8 @@ namespace LVFS.Sources.DirectoryMirror
 			{
 				fileInfo = new DirectoryInfo(filePath);
 				if (!fileInfo.Exists)
-				{
 					// This source has not got the requested file.
-					if (!IsFirst)
-						return GetPredecessorFileInformation(path);
-					else
-						return null;
-				}
+					return GetPredecessorFileInformation(path);
 			}
 
 			return new FileInformation
@@ -79,10 +110,8 @@ namespace LVFS.Sources.DirectoryMirror
 				return (FileSystemSecurity)Directory.GetAccessControl(fullPath, sections);
 			else if (File.Exists(fullPath))
 				return File.GetAccessControl(fullPath, sections);
-			else if (!IsFirst)
-				return GetPredecessorFileSystemSecurity(path, sections);
 			else
-				return null;
+				return GetPredecessorFileSystemSecurity(path, sections);
 		}
 
 		public override Tuple<long, long, long> GetSpaceInformation()
