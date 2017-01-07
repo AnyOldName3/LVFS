@@ -76,6 +76,44 @@ namespace LVFS.Sources.DirectoryMirror
 			}
 			else
 			{
+				var isDirectory = Directory.Exists(filePath);
+				var pathExists = isDirectory || File.Exists(filePath);
+
+				switch (mode)
+				{
+					case FileMode.Open:
+						if (pathExists)
+						{
+							var dataAccess = DokanNet.FileAccess.ReadData | DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Execute | DokanNet.FileAccess.GenericExecute | DokanNet.FileAccess.GenericWrite | DokanNet.FileAccess.GenericRead;
+							var readWriteOnlyAttributes = (access & dataAccess) == 0;
+							if (isDirectory || readWriteOnlyAttributes)
+							{
+								if (isDirectory && access.HasFlag(DokanNet.FileAccess.Delete) && !access.HasFlag(DokanNet.FileAccess.Synchronize))
+									// It's a delete request on a directory.
+									return DokanResult.AccessDenied;
+
+								info.IsDirectory = isDirectory;
+							}
+						}
+						else
+							return DokanResult.FileNotFound;
+						break;
+
+					case FileMode.CreateNew:
+						if (pathExists)
+							return DokanResult.FileExists;
+						else
+							return DokanResult.AccessDenied;
+
+					case FileMode.Truncate:
+						if (pathExists)
+							return DokanResult.AccessDenied;
+						else
+							return DokanResult.FileNotFound;
+
+					default:
+						throw new ArgumentException(mode.ToString(), "mode");
+				}
 				return DokanResult.NotImplemented;
 			}
 		}
