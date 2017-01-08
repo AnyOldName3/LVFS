@@ -248,7 +248,9 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override Tuple<long, long, long> GetSpaceInformation()
 		{
-			throw new NotImplementedException();
+			var driveInfo = DriveInfo.GetDrives().Single(drive => drive.RootDirectory.Name == Path.GetPathRoot(DirectoryPath + "\\"));
+
+			return new Tuple<long, long, long>(driveInfo.TotalFreeSpace, driveInfo.TotalSize, driveInfo.AvailableFreeSpace);
 		}
 
 		public override IList<FileInformation> ListFiles(string path)

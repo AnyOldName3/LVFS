@@ -138,6 +138,7 @@
 * GetFileSystemSecurity
 	- Done
 * GetSpaceInformation
+	- Done
 * ListFiles
 	- Done
 * ReadFile
