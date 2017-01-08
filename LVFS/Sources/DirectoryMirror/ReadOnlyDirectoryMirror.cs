@@ -26,12 +26,41 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override bool CleanupFileHandle(string path, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				object context;
+				if (info.Context.TryGetValue(this, out context))
+				{
+					(context as FileStream)?.Dispose();
+					info.Context.Remove(this);
+				}
+				return true;
+			}
+			catch (Exception)
+			{
+				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+				return false;
+			}
 		}
 
 		public override bool CloseFileHandle(string path, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			// This is the same as Cleanup as there's only one thing that might need tidying, but according to a comment in the DokanNet Mirror example, there potentially are situations where only one of the two is called.
+			try
+			{
+				object context;
+				if (info.Context.TryGetValue(this, out context))
+				{
+					(context as FileStream)?.Dispose();
+					info.Context.Remove(this);
+				}
+				return true;
+			}
+			catch (Exception)
+			{
+				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+				return false;
+			}
 		}
 
 		public override bool ControlsFile(string path)

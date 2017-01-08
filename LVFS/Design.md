@@ -126,7 +126,9 @@
 #ReadOnlyDirectoryMirror
 
 * CleanupFileHandle
+	- Done
 * CloseFileHandle
+	- Done
 * ControlsFile
 	- Done
 * CreateFileHandle
