@@ -305,7 +305,7 @@ namespace LVFS.Sources.DirectoryMirror
 				}
 			}
 			else
-				return false;
+				return PredecessorTryLockFileRegion(path, startOffset, length, info);
 		}
 
 		public override bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
@@ -323,7 +323,7 @@ namespace LVFS.Sources.DirectoryMirror
 				}
 			}
 			else
-				return false;
+				return PredecessorTryUnlockFileRegion(path, startOffset, length, info);
 		}
 	}
 }
