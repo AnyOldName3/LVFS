@@ -40,12 +40,12 @@ namespace LVFS.Filesystem
 
 		public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus DeleteFile(string fileName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)
@@ -71,7 +71,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus FlushFileBuffers(string fileName, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)
@@ -149,7 +149,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)
@@ -160,27 +160,27 @@ namespace LVFS.Filesystem
 
 		public NtStatus SetAllocationSize(string fileName, long length, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetEndOfFile(string fileName, long length, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			return DokanResult.NotImplemented;
 		}
 
 		public NtStatus UnlockFile(string fileName, long offset, long length, DokanFileInfo info)
@@ -200,7 +200,8 @@ namespace LVFS.Filesystem
 
 		public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
 		{
-			throw new NotImplementedException();
+			bytesWritten = 0;
+			return DokanResult.NotImplemented;
 		}
 	}
 }
