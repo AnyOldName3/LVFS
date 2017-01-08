@@ -51,11 +51,20 @@ namespace LVFS.Sources.DirectoryMirror
 					{
 						case FileMode.Open:
 							if (Directory.Exists(filePath))
+								// The original Dokan mirror this is based on called new DirectoryInfo(filePath).EnumerateFileSystemInfos().Any();, but did nothing with its result at this point
 								return DokanResult.Success;
 							else if (File.Exists(filePath))
 								return NtStatus.NotADirectory;
 							else
 								return DokanResult.PathNotFound;
+
+						case FileMode.OpenOrCreate:
+							if (Directory.Exists(filePath))
+								return DokanResult.Success;
+							else if (File.Exists(filePath))
+								return DokanResult.FileExists;
+							else
+								return DokanResult.AccessDenied;
 
 						case FileMode.CreateNew:
 							if (Directory.Exists(filePath))
@@ -66,7 +75,7 @@ namespace LVFS.Sources.DirectoryMirror
 								return DokanResult.AccessDenied;
 
 						default:
-							throw new ArgumentException(mode.ToString(), "mode");
+							return DokanResult.AccessDenied;
 					}
 				}
 				catch (UnauthorizedAccessException)
@@ -93,11 +102,22 @@ namespace LVFS.Sources.DirectoryMirror
 									return DokanResult.AccessDenied;
 
 								info.IsDirectory = isDirectory;
+
+								return DokanResult.Success;
 							}
+							else
+								// Go to the regular handler
+								break;
 						}
 						else
 							return DokanResult.FileNotFound;
-						break;
+
+					case FileMode.OpenOrCreate:
+						if (pathExists)
+							// Go to the regular handler
+							break;
+						else
+							return DokanResult.AccessDenied;
 
 					case FileMode.CreateNew:
 						if (pathExists)
@@ -111,10 +131,48 @@ namespace LVFS.Sources.DirectoryMirror
 						else
 							return DokanResult.FileNotFound;
 
+					case FileMode.Create:
+						return DokanResult.AccessDenied;
+
+					case FileMode.Append:
+						if (pathExists)
+							return DokanResult.AccessDenied;
+						else
+							return DokanResult.FileNotFound;
+
 					default:
-						throw new ArgumentException(mode.ToString(), "mode");
+						// This code should never be reached
+						throw new ArgumentException("Unknown file mode: " + mode, nameof(mode));
 				}
-				return DokanResult.NotImplemented;
+
+				try
+				{
+					info.Context[this] = new FileStream(filePath, mode, System.IO.FileAccess.Read, share, 4096, options);
+
+					if (mode == FileMode.Open)
+						return DokanResult.Success;
+					else
+						return DokanResult.AlreadyExists;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+				catch (DirectoryNotFoundException)
+				{
+					return DokanResult.PathNotFound;
+				}
+				catch (Exception ex)
+				{
+					var hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex);
+					switch (hr)
+					{
+						case 0x80070020: //Sharing violation
+							return DokanResult.SharingViolation;
+						default:
+							throw;
+					}
+				}
 			}
 		}
 

@@ -130,6 +130,7 @@
 * ControlsFile
 	- Done
 * CreateFileHandle
+	- Done... hopefully
 * GetFileInformation
 	- Done
 * GetFileSystemSecurity
