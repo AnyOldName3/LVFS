@@ -142,4 +142,6 @@
 	- Done
 * ReadFile
 * TryLockFileRegion
+	- Done
 * TryUnlockFileRegion
+	- Done

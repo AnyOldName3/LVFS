@@ -292,12 +292,38 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override bool TryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				try
+				{
+					(info.Context[this] as FileStream)?.Lock(startOffset, length);
+					return true;
+				}
+				catch (IOException)
+				{
+					return false;
+				}
+			}
+			else
+				return false;
 		}
 
 		public override bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				try
+				{
+					(info.Context[this] as FileStream)?.Unlock(startOffset, length);
+					return true;
+				}
+				catch (IOException)
+				{
+					return false;
+				}
+			}
+			else
+				return false;
 		}
 	}
 }
