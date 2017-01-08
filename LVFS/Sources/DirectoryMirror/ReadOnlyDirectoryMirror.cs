@@ -43,6 +43,13 @@ namespace LVFS.Sources.DirectoryMirror
 		{
 			var filePath = ConvertPath(path);
 
+			var isDirectory = Directory.Exists(filePath);
+			var pathExists = isDirectory || File.Exists(filePath);
+
+			// Check this first for performance reasons. Keep checking it later in case anything's been meddled with
+			if(!pathExists)
+				return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+
 			if (info.IsDirectory)
 			{
 				try
@@ -56,7 +63,7 @@ namespace LVFS.Sources.DirectoryMirror
 							else if (File.Exists(filePath))
 								return NtStatus.NotADirectory;
 							else
-								return DokanResult.PathNotFound;
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 						case FileMode.OpenOrCreate:
 							if (Directory.Exists(filePath))
@@ -64,7 +71,7 @@ namespace LVFS.Sources.DirectoryMirror
 							else if (File.Exists(filePath))
 								return DokanResult.FileExists;
 							else
-								return DokanResult.AccessDenied;
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 						case FileMode.CreateNew:
 							if (Directory.Exists(filePath))
@@ -72,10 +79,13 @@ namespace LVFS.Sources.DirectoryMirror
 							else if (File.Exists(filePath))
 								return DokanResult.FileExists;
 							else
-								return DokanResult.AccessDenied;
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 						default:
-							return DokanResult.AccessDenied;
+							if (Directory.Exists(filePath) || File.Exists(filePath))
+								return DokanResult.AccessDenied;
+							else
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 					}
 				}
 				catch (UnauthorizedAccessException)
@@ -85,9 +95,6 @@ namespace LVFS.Sources.DirectoryMirror
 			}
 			else
 			{
-				var isDirectory = Directory.Exists(filePath);
-				var pathExists = isDirectory || File.Exists(filePath);
-
 				switch (mode)
 				{
 					case FileMode.Open:
