@@ -141,6 +141,7 @@
 * ListFiles
 	- Done
 * ReadFile
+	- Done
 * TryLockFileRegion
 	- Done
 * TryUnlockFileRegion

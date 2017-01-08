@@ -287,7 +287,28 @@ namespace LVFS.Sources.DirectoryMirror
 
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				var stream = info.Context[this] as FileStream;
+				lock (stream)
+				{
+					stream.Position = offset;
+					bytesRead = stream.Read(buffer, 0, buffer.Length);
+				}
+				return true;
+			}
+			else if (File.Exists(ConvertPath(path)))
+			{
+				using (var stream = new FileStream(ConvertPath(path), FileMode.Open, System.IO.FileAccess.Read))
+				{
+					stream.Position = offset;
+
+					bytesRead = stream.Read(buffer, 0, buffer.Length);
+				}
+				return true;
+			}
+			else
+				return PredecessorReadFile(path, buffer, out bytesRead, offset, info);
 		}
 
 		public override bool TryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
