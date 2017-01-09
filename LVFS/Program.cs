@@ -16,13 +16,28 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Attempting to mirror '" + args[1] + "' and '" + args[2] + "' to mount point '" + args[0] + "'");
+			var sourceCount = args.Length - 1;
+			Console.WriteLine("There are " + sourceCount + " sources listed.");
 
-			Source source = new ReadOnlyDirectoryMirror(args[1], null);
-			Source sourceB = new ReadOnlyDirectoryMirror(args[2], source);
+			Console.Write("Attempting to mirror ");
+
+			for (var i = 1; i < sourceCount; i++)
+				Console.Write("'" + args[i] + "', ");
+
+			Console.WriteLine("and '" + args[sourceCount] + "' to mount point '" + args[0] + "'");
+
 			Selector selector = new Selector();
-			selector.AddSource(source);
-			selector.AddSource(sourceB);
+
+			Source sourceA = null;
+			Source sourceB;
+
+			for (var i = 1; i <= sourceCount; i++)
+			{
+				sourceB = new ReadOnlyDirectoryMirror(args[i], sourceA);
+				sourceA = sourceB;
+				selector.AddSource(sourceA);
+			}
+
 			LVFSEngine filesystem = new LVFSEngine(selector, "VolumeLabel", "FSName");
 
 			try
