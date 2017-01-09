@@ -16,11 +16,13 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine("Attempting to mirror '" + args[1] + "' to mount point '" + args[0] + "'");
+			Console.WriteLine("Attempting to mirror '" + args[1] + "' and '" + args[2] + "' to mount point '" + args[0] + "'");
 
 			Source source = new ReadOnlyDirectoryMirror(args[1], null);
+			Source sourceB = new ReadOnlyDirectoryMirror(args[2], source);
 			Selector selector = new Selector();
 			selector.AddSource(source);
+			selector.AddSource(sourceB);
 			LVFSEngine filesystem = new LVFSEngine(selector, "VolumeLabel", "FSName");
 
 			try

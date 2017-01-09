@@ -259,21 +259,27 @@ namespace LVFS.Sources.DirectoryMirror
 			IList<FileInformation> predecessorList = ListPredecessorFiles(path);
 
 			HashSet<string> names = new HashSet<string>();
-			IList<FileInformation> thisList = new DirectoryInfo(ConvertPath(path)).GetFileSystemInfos().Select((fileInfo) =>
+			IList<FileInformation> resultList;
+			if (Directory.Exists(ConvertPath(path)))
 			{
-				names.Add(fileInfo.Name);
-				return new FileInformation
+				IList<FileInformation> thisList = new DirectoryInfo(ConvertPath(path)).GetFileSystemInfos().Select((fileInfo) =>
 				{
-					FileName = fileInfo.Name,
-					Attributes = fileInfo.Attributes,
-					CreationTime = fileInfo.CreationTime,
-					LastAccessTime = fileInfo.LastAccessTime,
-					LastWriteTime = fileInfo.LastWriteTime,
-					Length = (fileInfo as FileInfo)?.Length ?? 0
-				};
-			}).ToArray();
-
-			IList<FileInformation> resultList = new List<FileInformation>(thisList);
+					names.Add(fileInfo.Name);
+					return new FileInformation
+					{
+						FileName = fileInfo.Name,
+						Attributes = fileInfo.Attributes,
+						CreationTime = fileInfo.CreationTime,
+						LastAccessTime = fileInfo.LastAccessTime,
+						LastWriteTime = fileInfo.LastWriteTime,
+						Length = (fileInfo as FileInfo)?.Length ?? 0
+					};
+				}).ToArray();
+				resultList = new List<FileInformation>(thisList);
+			}
+			else
+				resultList = new List<FileInformation>();
+			
 			foreach (FileInformation fileInfo in predecessorList)
 			{
 				if (!names.Contains(fileInfo.FileName))
