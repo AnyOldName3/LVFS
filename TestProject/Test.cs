@@ -9,34 +9,19 @@ namespace LVFS
 {
 	class Test
 	{
-		static void SwitchThing(FileMode mode)
-		{
-			Console.WriteLine("Testing " + mode);
-			switch (mode)
-			{
-				case FileMode.Open:
-					Console.WriteLine("Open");
-					break;
-				
-				case FileMode.CreateNew:
-					Console.WriteLine("CreateNew");
-					break;
+		static string DirectoryPath = "G:\\Chris\\Documents";
 
-				case FileMode.Truncate:
-					Console.WriteLine("Truncate");
-					break;
-			}
-			Console.WriteLine();
+		private static string ConvertPath(string path)
+		{
+			path = path.Substring(1);
+			return Path.Combine(DirectoryPath, path);
 		}
 
 		static void Main(string[] args)
 		{
-			SwitchThing(FileMode.Append);
-			SwitchThing(FileMode.Create);
-			SwitchThing(FileMode.CreateNew);
-			SwitchThing(FileMode.Open);
-			SwitchThing(FileMode.OpenOrCreate);
-			SwitchThing(FileMode.Truncate);
+
+			Console.WriteLine(ConvertPath("\\TestFolder\\"));
+			;
 		}
 	}
 }

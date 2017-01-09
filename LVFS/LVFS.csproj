@@ -51,7 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Filesystem\LVFS.cs" />
+    <Compile Include="Filesystem\LVFSEngine.cs" />
     <Compile Include="Filesystem\LVFSContextInfo.cs" />
     <Compile Include="Filesystem\Reader.cs" />
     <Compile Include="Filesystem\Selector.cs" />

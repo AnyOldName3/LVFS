@@ -10,13 +10,13 @@ using DokanNet;
 
 namespace LVFS.Filesystem
 {
-	class LVFS : IDokanOperations
+	class LVFSEngine : IDokanOperations
 	{
 		private Selector mSelector;
 
 		private string mVolumeLabel, mFileSystemName;
 
-		public LVFS(Selector selector, string volumeLabel, string fileSystemName)
+		public LVFSEngine(Selector selector, string volumeLabel, string fileSystemName)
 		{
 			mSelector = selector;
 			mVolumeLabel = volumeLabel;

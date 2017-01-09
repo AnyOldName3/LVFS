@@ -21,6 +21,7 @@ namespace LVFS.Sources.DirectoryMirror
 
 		private string ConvertPath(string path)
 		{
+			path = path.Substring(1);
 			return Path.Combine(DirectoryPath, path);
 		}
 
