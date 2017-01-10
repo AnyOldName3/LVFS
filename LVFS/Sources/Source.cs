@@ -76,7 +76,20 @@ namespace LVFS.Sources
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
 		protected NtStatus PredecessorCreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info)
 		{
-			return mPredecessor?.CreateFileHandle(path, access, share, mode, options, attributes, info) ?? DokanResult.PathNotFound;
+			if (mPredecessor != null)
+				return mPredecessor.CreateFileHandle(path, access, share, mode, options, attributes, info);
+			else
+			{
+				switch (mode)
+				{
+					case FileMode.Create:
+					case FileMode.CreateNew:
+					case FileMode.OpenOrCreate:
+						return DokanResult.AccessDenied;
+					default:
+						return DokanResult.PathNotFound;
+				}
+			}
 		}
 
 		/// <summary>
