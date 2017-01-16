@@ -5,16 +5,18 @@ using System.Linq;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
-using DokanNet;
-using LVFS.Filesystem;
 
-namespace LVFS.Sources.DirectoryMirror
+using DokanNet;
+
+using LVFS.External;
+
+namespace LayeredDirectoryMirror.DirectoryMirror
 {
 	class ReadOnlyDirectoryMirror : Source
 	{
 		public string DirectoryPath { get; private set; }
 
-		public ReadOnlyDirectoryMirror(string path, Source predecessor) : base(predecessor)
+		public ReadOnlyDirectoryMirror(string path)
 		{
 			DirectoryPath = path;
 		}

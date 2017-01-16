@@ -7,7 +7,7 @@ using System.Security.AccessControl;
 
 using DokanNet;
 
-using LVFS.Sources;
+using LVFS.External;
 
 namespace LVFS.Filesystem
 {
@@ -17,12 +17,12 @@ namespace LVFS.Filesystem
 	class Selector
 	{
 		private IList<Source> mSources;
-		private Source Last { get { return mSources.Last<Source>(); } }
+		private Source Last { get { return mSources.Count >= 1 ? mSources.Last<Source>() : null; } }
 
 		/// <summary>
 		/// Constructs a new Selector with a list of Sources
 		/// </summary>
-		/// <param name="sources">The list of Sources to use</param>
+		/// <param name="sources">The list of Sources to use. They must already have their predecessors set up correctly.</param>
 		public Selector(IList<Source> sources)
 		{
 			mSources = new List<Source>(sources);
@@ -43,7 +43,8 @@ namespace LVFS.Filesystem
 		public void AddSource(Source source)
 		{
 			if (source == null)
-				throw new ArgumentNullException("source");
+				throw new ArgumentNullException(nameof(source));
+			source.SetPredecessor(Last);
 			mSources.Add(source);
 		}
 
@@ -71,7 +72,21 @@ namespace LVFS.Filesystem
 		/// <returns>A list of file information about the directory contents, or null if the directory does not exist within the VFS</returns>
 		public IList<FileInformation> ListFiles(string path)
 		{
-			return Last.ListFiles(path);
+			var list = Last.ListFiles(path);
+
+			if (list != null && HasWritableSource)
+			{
+				var list2 = new List<FileInformation>();
+				foreach (var info in list)
+				{
+					var infoCopy = info;
+					infoCopy.Attributes |= System.IO.FileAttributes.ReadOnly;
+					list2.Add(info);
+				}
+				return list2;
+			}
+
+			return list;
 		}
 
 		/// <summary>
@@ -81,7 +96,15 @@ namespace LVFS.Filesystem
 		/// <returns>A nullable FileInformation struct for the requested file.</returns>
 		public FileInformation? GetFileInformation(string path)
 		{
-			return Last.GetFileInformation(path);
+			var info = Last.GetFileInformation(path);
+			if (info.HasValue && HasWritableSource)
+			{
+				var value = info.Value;
+				value.Attributes |= System.IO.FileAttributes.ReadOnly;
+				return value;
+			}
+			else
+				return info;
 		}
 
 		/// <summary>

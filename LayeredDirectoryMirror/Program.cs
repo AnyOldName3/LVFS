@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 using DokanNet;
 
-using LVFS.Filesystem;
-using LVFS.Sources;
-using LVFS.Sources.DirectoryMirror;
+using LVFS.External;
+
+using LayeredDirectoryMirror.DirectoryMirror;
 
 namespace LVFS
 {
@@ -26,23 +26,15 @@ namespace LVFS
 
 			Console.WriteLine("and '" + args[sourceCount] + "' to mount point '" + args[0] + "'");
 
-			Selector selector = new Selector();
+			LVFSInterface lvfs = new LVFSInterface("Mirror");
 
-			Source sourceA = null;
-			Source sourceB;
-
-			for (var i = 1; i <= sourceCount; i++)
-			{
-				sourceB = new ReadOnlyDirectoryMirror(args[i], sourceA);
-				sourceA = sourceB;
-				selector.AddSource(sourceA);
-			}
-
-			LVFSEngine filesystem = new LVFSEngine(selector, "VolumeLabel", "FSName");
+			for (var i = 1; i < args.Length; i++)
+				lvfs.AddSource(new ReadOnlyDirectoryMirror(args[i]));
 
 			try
 			{
-				filesystem.Mount(args[0]);
+				lvfs.Mount(args[0]);
+
 				Console.WriteLine("Success!");
 			}
 			catch (DokanException de)

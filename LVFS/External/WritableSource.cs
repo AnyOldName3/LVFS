@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LVFS.Sources
+namespace LVFS.External
 {
-	abstract class WritableSource : Source
+	public abstract class WritableSource : Source
 	{
-		protected WritableSource(Source predecessor) : base(predecessor)
+		protected WritableSource(Source predecessor)
 		{
 
 		}

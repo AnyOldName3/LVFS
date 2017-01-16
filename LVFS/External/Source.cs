@@ -8,22 +8,33 @@ using System.Security.AccessControl;
 
 using DokanNet;
 
-namespace LVFS.Sources
+namespace LVFS.External
 {
 	/// <summary>
 	/// Represents a source (individual layer) in the LVFS.
 	/// </summary>
-	abstract class Source
+	public abstract class Source
 	{
 		private Source mPredecessor;
 
+		/// <summary>
+		/// True if this source has no predecessor. False otherwise.
+		/// </summary>
 		public bool IsFirst { get { return mPredecessor == null; } }
 
 		/// <summary>
-		/// Construct a source with the specified predecessor.
+		/// Construct a source.
 		/// </summary>
-		/// <param name="predecessor">The predecessor of the current source. It should be null if there is no predecessor.</param>
-		protected Source(Source predecessor)
+		protected Source()
+		{
+			mPredecessor = null;
+		}
+
+		/// <summary>
+		/// Sets the predecessor
+		/// </summary>
+		/// <param name="predecessor">The new predecessor of this source</param>
+		internal void SetPredecessor(Source predecessor)
 		{
 			mPredecessor = predecessor;
 		}
@@ -74,7 +85,7 @@ namespace LVFS.Sources
 		/// <param name="attributes">The attributes of the file</param>
 		/// <param name="info">A LVFSInfo containing the context for the file handle and information on the file.</param>
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
-		protected NtStatus PredecessorCreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info)
+		protected NtStatus PredecessorCreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
 		{
 			if (mPredecessor != null)
 				return mPredecessor.CreateFileHandle(path, access, share, mode, options, attributes, info);
@@ -98,7 +109,7 @@ namespace LVFS.Sources
 		/// <param name="path">The path to the file</param>
 		/// <param name="info">The information for the context</param>
 		/// <returns>True if the operation is successful</returns>
-		protected bool PredecessorCleanupFileHandle(string path, Filesystem.LVFSContextInfo info)
+		protected bool PredecessorCleanupFileHandle(string path, LVFSContextInfo info)
 		{
 			return mPredecessor?.CleanupFileHandle(path, info) ?? true;
 		}
@@ -109,7 +120,7 @@ namespace LVFS.Sources
 		/// <param name="path">The path to the file</param>
 		/// <param name="info">The information for the context</param>
 		/// <returns>True if the operation is successful</returns>
-		protected bool PredecessorCloseFileHandle(string path, Filesystem.LVFSContextInfo info)
+		protected bool PredecessorCloseFileHandle(string path, LVFSContextInfo info)
 		{
 			return mPredecessor?.CloseFileHandle(path, info) ?? true;
 		}
@@ -123,7 +134,7 @@ namespace LVFS.Sources
 		/// <param name="offset">The byte at which to start reading.</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>A bool indicating whether the operation was successful</returns>
-		protected bool PredecessorReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info)
+		protected bool PredecessorReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			if (IsFirst)
 			{
@@ -142,7 +153,7 @@ namespace LVFS.Sources
 		/// <param name="length">The length of the region to lock</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>True if the operation was successful, false if access was denied</returns>
-		protected bool PredecessorTryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
+		protected bool PredecessorTryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
 			return mPredecessor?.TryLockFileRegion(path, startOffset, length, info) ?? false;
 		}
@@ -155,7 +166,7 @@ namespace LVFS.Sources
 		/// <param name="length">The length of the region to unlock</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>True if the operation was successful, false if access was denied</returns>
-		protected bool PredecessorTryUnlockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info)
+		protected bool PredecessorTryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
 			return mPredecessor?.TryUnlockFileRegion(path, startOffset, length, info) ?? false;
 		}
@@ -225,7 +236,7 @@ namespace LVFS.Sources
 		/// <param name="attributes">The attributes of the file</param>
 		/// <param name="info">A LVFSInfo containing the context for the file handle and information on the file.</param>
 		/// <returns>An NtStatus explaining the success level of the operation. If mode is OpenOrCreate and Create, and the operation is successful opening an existing file, DokanResult.AlreadyExists must be returned.</returns>
-		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, Filesystem.LVFSContextInfo info);
+		public abstract NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info);
 
 		/// <summary>
 		/// Called when the last handle for a file has been closed, but not necessarily released. This is an appropriate place to delete the file if DeleteOnClose is set. This must recursively call the predecessor version if the predecessor source may have been invloved in any operations with this context.
@@ -233,7 +244,7 @@ namespace LVFS.Sources
 		/// <param name="path">The path to the file</param>
 		/// <param name="info">The information for the context</param>
 		/// <returns>True if the operation is successful</returns>
-		public abstract bool CleanupFileHandle(string path, Filesystem.LVFSContextInfo info);
+		public abstract bool CleanupFileHandle(string path, LVFSContextInfo info);
 
 		/// <summary>
 		/// Called once the last handle for a file has been closed and released. <paramref name="info"/>.Context will be lost after this method returns, so must be ready for this. This must recursively call the predecessor version if the predecessor source may have been invloved in any operations with this context.
@@ -241,7 +252,7 @@ namespace LVFS.Sources
 		/// <param name="path">The path to the file</param>
 		/// <param name="info">The information for the context</param>
 		/// <returns>True if the operation was successful</returns>
-		public abstract bool CloseFileHandle(string path, Filesystem.LVFSContextInfo info);
+		public abstract bool CloseFileHandle(string path, LVFSContextInfo info);
 
 		/// <summary>
 		/// Gets the contents of the specified file starting at the specified offset and attempts to fill the buffer. If this is an inappropriate action for this source, the request is passed on to the predecessor.
@@ -252,7 +263,7 @@ namespace LVFS.Sources
 		/// <param name="offset">The byte at which to start reading.</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>A bool indicating whether the operation was successful</returns>
-		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, Filesystem.LVFSContextInfo info);
+		public abstract bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info);
 
 		/// <summary>
 		/// Locks a region of the specified file from the specified offset with the specified length if possible. The region is either entirely locked or entirely unlocked at the end of the operation. If this is an inappropriate action for this source, the request is passed on to the predecessor.
@@ -262,7 +273,7 @@ namespace LVFS.Sources
 		/// <param name="length">The length of the region to lock</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>True if the operation was successful, false if access was denied</returns>
-		public abstract bool TryLockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info);
+		public abstract bool TryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info);
 
 		/// <summary>
 		/// Unlocks a region of the specified file from the specified offset with the specified length if possible. If this is an inappropriate action for this source, the request is passed on to the predecessor.
@@ -272,6 +283,6 @@ namespace LVFS.Sources
 		/// <param name="length">The length of the region to unlock</param>
 		/// <param name="info">Holds the context for the operation and relevant information</param>
 		/// <returns>True if the operation was successful, false if access was denied</returns>
-		public abstract bool TryUnlockFileRegion(string path, long startOffset, long length, Filesystem.LVFSContextInfo info);
+		public abstract bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info);
 	}
 }

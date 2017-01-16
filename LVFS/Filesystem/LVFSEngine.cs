@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 using DokanNet;
 
+using LVFS.External;
+
 namespace LVFS.Filesystem
 {
 	class LVFSEngine : IDokanOperations
@@ -35,7 +37,7 @@ namespace LVFS.Filesystem
 
 		public NtStatus CreateFile(string fileName, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, DokanFileInfo info)
 		{
-			return mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, new LVFSContextInfo(info));
+			  return mSelector.CreateFileHandle(fileName, access, share, mode, options, attributes, new LVFSContextInfo(info));
 		}
 
 		public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)

@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 using DokanNet;
 
-namespace LVFS.Filesystem
+namespace LVFS.External
 {
-	class LVFSContextInfo
+	public class LVFSContextInfo
 	{
 		DokanFileInfo mParent;
 
-		public IDictionary<Sources.Source, object> Context { get; private set; }
+		public IDictionary<Source, object> Context { get; private set; }
 		
 		public bool DeleteOnClose
 		{
@@ -39,10 +39,10 @@ namespace LVFS.Filesystem
 		{
 			mParent = info;
 
-			Context = (IDictionary<Sources.Source, object>)info.Context;
+			Context = (IDictionary<Source, object>)info.Context;
 			if (Context == null)
 			{
-				Context = new Dictionary<Sources.Source, object>();
+				Context = new Dictionary<Source, object>();
 				mParent.Context = Context;
 			}
 
