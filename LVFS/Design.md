@@ -88,6 +88,7 @@
 
 ##Write
 * DeleteDirectory
+	- Done
 * DeleteFile
 * FlushFileBuffers
 	- In Mirror is simply

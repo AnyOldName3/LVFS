@@ -48,7 +48,7 @@ namespace LVFS.Filesystem
 			mSources.Add(source);
 		}
 
-		public bool HasWritableSource { get { return Last.GetType().IsSubclassOf(typeof(WritableSource)); } }
+		public bool IsWritable { get { return Last is WritableSource; } }
 
 		/// <summary>
 		/// Gets the source responsible for a file/directory
@@ -74,7 +74,7 @@ namespace LVFS.Filesystem
 		{
 			var list = Last.ListFiles(path);
 
-			if (list != null && HasWritableSource)
+			if (list != null && IsWritable)
 			{
 				var list2 = new List<FileInformation>();
 				foreach (var info in list)
@@ -97,7 +97,7 @@ namespace LVFS.Filesystem
 		public FileInformation? GetFileInformation(string path)
 		{
 			var info = Last.GetFileInformation(path);
-			if (info.HasValue && HasWritableSource)
+			if (info.HasValue && IsWritable)
 			{
 				var value = info.Value;
 				value.Attributes |= System.IO.FileAttributes.ReadOnly;
@@ -228,6 +228,17 @@ namespace LVFS.Filesystem
 		public bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
 			return Last.TryUnlockFileRegion(path, startOffset, length, info);
+		}
+
+		public NtStatus CheckDirectoryDeletable(string path)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.CheckDirectoryDeletable(path);
+			else if (Last != null && Last.GetFileInformation(path) != null)
+				return DokanResult.AccessDenied;
+			else
+				return DokanResult.PathNotFound;
 		}
 	}
 }

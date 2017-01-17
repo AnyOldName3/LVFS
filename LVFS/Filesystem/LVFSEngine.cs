@@ -42,7 +42,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus DeleteDirectory(string fileName, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.CheckDirectoryDeletable(fileName);
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus DeleteFile(string fileName, DokanFileInfo info)
@@ -128,7 +131,7 @@ namespace LVFS.Filesystem
 			// Values copied from DokenNet's Mirror example
 			features = FileSystemFeatures.CasePreservedNames | FileSystemFeatures.CaseSensitiveSearch | FileSystemFeatures.PersistentAcls | FileSystemFeatures.SupportsRemoteStorage | FileSystemFeatures.UnicodeOnDisk;
 			
-			if (! mSelector.HasWritableSource)
+			if (! mSelector.IsWritable)
 				features |= FileSystemFeatures.ReadOnlyVolume;
 
 			return DokanResult.Success;

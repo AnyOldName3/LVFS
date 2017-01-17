@@ -15,12 +15,22 @@ namespace LVFS.External
 	/// </summary>
 	public abstract class Source
 	{
-		private Source mPredecessor;
+		internal Source mPredecessor;
 
 		/// <summary>
 		/// True if this source has no predecessor. False otherwise.
 		/// </summary>
 		public bool IsFirst { get { return mPredecessor == null; } }
+
+		/// <summary>
+		/// True if the source is writable
+		/// </summary>
+		public bool IsWritable { get { return this is WritableSource; } }
+
+		/// <summary>
+		/// True if a predecessor source exists and is writable
+		/// </summary>
+		public bool HasWritablePredecessor { get { return !IsFirst && mPredecessor.IsWritable; } }
 
 		/// <summary>
 		/// Construct a source.
