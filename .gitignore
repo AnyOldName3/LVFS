@@ -211,3 +211,6 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 /LVFS/LVFS.xml
+/LayeredDirectoryMirror/LayeredDirectoryMirror.xml
+/Documentation/LayeredDirectoryMirror
+/Documentation/LVFS

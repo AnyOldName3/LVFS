@@ -12,7 +12,7 @@ using LVFS.External;
 
 namespace LayeredDirectoryMirror.DirectoryMirror
 {
-	class ReadOnlyDirectoryMirror : Source
+	public class ReadOnlyDirectoryMirror : Source
 	{
 		public string DirectoryPath { get; private set; }
 

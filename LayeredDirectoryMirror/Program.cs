@@ -12,7 +12,7 @@ using LayeredDirectoryMirror.DirectoryMirror;
 
 namespace LVFS
 {
-	class Program
+	public class Program
 	{
 		static void Main(string[] args)
 		{
