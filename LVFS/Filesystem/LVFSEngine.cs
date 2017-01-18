@@ -50,7 +50,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus DeleteFile(string fileName, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.CheckFileDeletable(fileName);
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus FindFiles(string fileName, out IList<FileInformation> files, DokanFileInfo info)

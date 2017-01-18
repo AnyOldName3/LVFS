@@ -90,6 +90,7 @@
 * DeleteDirectory
 	- Done
 * DeleteFile
+	- Done
 * FlushFileBuffers
 	- In Mirror is simply
 	

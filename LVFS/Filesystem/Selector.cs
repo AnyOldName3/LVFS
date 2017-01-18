@@ -230,6 +230,11 @@ namespace LVFS.Filesystem
 			return Last.TryUnlockFileRegion(path, startOffset, length, info);
 		}
 
+		/// <summary>
+		/// Checks if a directory can be deleted, but doesn't actually do so. Must not return a success result if the directory is non-empty.
+		/// </summary>
+		/// <param name="path">The path to the directory to check</param>
+		/// <returns><see cref="DokanResult.Success"/> if the directory can be deleted. If not, an appropriate status message to explain why.</returns>
 		public NtStatus CheckDirectoryDeletable(string path)
 		{
 			WritableSource writable = Last as WritableSource;
@@ -239,6 +244,22 @@ namespace LVFS.Filesystem
 				return DokanResult.AccessDenied;
 			else
 				return DokanResult.PathNotFound;
+		}
+
+		/// <summary>
+		/// Checks if a file can be deleted, but doesn't actually do so. For the purpose of this method, directories do not count as files.
+		/// </summary>
+		/// <param name="path">The path to the file to check</param>
+		/// <returns><see cref="DokanResult.Success"/> if the file can be delted. If not, an appropriate error status.</returns>
+		public NtStatus CheckFileDeletable(string path)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.CheckFileDeletable(path);
+			else if (Last != null && Last.GetFileInformation(path) != null)
+				return DokanResult.AccessDenied;
+			else
+				return DokanResult.FileNotFound;
 		}
 	}
 }
