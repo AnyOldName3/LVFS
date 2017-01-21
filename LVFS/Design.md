@@ -102,7 +102,9 @@
 	- Done
 * SetAllocationSize
 	- in Mirror, calls `FileStream.SetLength`
+	- Done
 * SetEndOfFile
+	- Done
 * SetFileAttributes
 * SetFileSecurity
 * SetFileTime

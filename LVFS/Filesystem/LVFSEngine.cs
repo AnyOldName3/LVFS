@@ -174,12 +174,18 @@ namespace LVFS.Filesystem
 
 		public NtStatus SetAllocationSize(string fileName, long length, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.SetAllocatedSize(fileName, length, new LVFSContextInfo(info));
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetEndOfFile(string fileName, long length, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.SetLength(fileName, length, new LVFSContextInfo(info));
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, DokanFileInfo info)

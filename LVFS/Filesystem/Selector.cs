@@ -293,5 +293,37 @@ namespace LVFS.Filesystem
 			else
 				return DokanResult.AccessDenied;
 		}
+
+		/// <summary>
+		/// Sets the allocated size for the file. If this is less than the current length, trucate the file. If the file does not grow to fill this space before the handle is released, it may be freed.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="allocationSize">The new size to allocate</param>
+		/// <param name="info">Information concerning the context for this operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if the allocation size was changed or already the correct value. If not, an appropriate error status.</returns>
+		public NtStatus SetAllocatedSize(string path, long allocationSize, LVFSContextInfo info)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.SetAllocatedSize(path, allocationSize, info);
+			else
+				return DokanResult.AccessDenied;
+		}
+
+		/// <summary>
+		/// Sets the length of the file.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="length">The new length of the file</param>
+		/// <param name="info">Information concerning the context of this operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if the requested length is now the length of the file. If not, an appropriate error status.</returns>
+		public NtStatus SetLength(string path, long length, LVFSContextInfo info)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.SetLength(path, length, info);
+			else
+				return DokanResult.AccessDenied;
+		}
 	}
 }
