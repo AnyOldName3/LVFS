@@ -101,8 +101,6 @@ namespace LVFS.Filesystem
 			{
 				var value = info.Value;
 				value.Attributes |= System.IO.FileAttributes.ReadOnly;
-				if (path.Contains("Dave.txt"))
-					;
 				return value;
 			}
 			else
