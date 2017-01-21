@@ -99,6 +99,7 @@
 	```
 	- Done
 * MoveFile
+	- Done
 * SetAllocationSize
 	- in Mirror, calls `FileStream.SetLength`
 * SetEndOfFile

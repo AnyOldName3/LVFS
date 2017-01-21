@@ -160,7 +160,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus MoveFile(string oldName, string newName, bool replace, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.MoveFile(oldName, newName, replace, new LVFSContextInfo(info));
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus ReadFile(string fileName, byte[] buffer, out int bytesRead, long offset, DokanFileInfo info)

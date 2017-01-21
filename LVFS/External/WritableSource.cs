@@ -66,5 +66,15 @@ namespace LVFS.External
 		/// <param name="info">Information concerning the context for the operation</param>
 		/// <returns><see cref="DokanResult.Success"/> if all buffers were flushed, If not, an appropriate error status.</returns>
 		public abstract NtStatus FlushBuffers(string path, LVFSContextInfo info);
+
+		/// <summary>
+		/// Moves the file/directory from its current path to a new one, replacing any existing files only if replace is set.
+		/// </summary>
+		/// <param name="currentPath">The current path of the file/directory</param>
+		/// <param name="newPath">The new path of the file/directory</param>
+		/// <param name="replace">Whether to replace any existing file occupying the new path</param>
+		/// <param name="info">Information concerning the context for this operation.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the file was moved. Otherwise, an appropriate error status.</returns>
+		public abstract NtStatus MoveFile(string currentPath, string newPath, bool replace, LVFSContextInfo info);
 	}
 }
