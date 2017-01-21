@@ -97,6 +97,7 @@
 	```cs
 	((FileStream) (info.Context)).Flush();
 	```
+	- Done
 * MoveFile
 * SetAllocationSize
 	- in Mirror, calls `FileStream.SetLength`

@@ -79,7 +79,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus FlushFileBuffers(string fileName, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.FlushBuffers(fileName, new LVFSContextInfo(info));
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus GetDiskFreeSpace(out long freeBytesAvailable, out long totalNumberOfBytes, out long totalNumberOfFreeBytes, DokanFileInfo info)

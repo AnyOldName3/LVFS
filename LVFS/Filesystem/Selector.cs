@@ -261,5 +261,20 @@ namespace LVFS.Filesystem
 			else
 				return DokanResult.FileNotFound;
 		}
+
+		/// <summary>
+		/// Clears any buffers for the context, and ensures any buffered data is written to the actual file.
+		/// </summary>
+		/// <param name="path">The path to the file whose buffers to flush</param>
+		/// <param name="info">Information concerning the context for the operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if all buffers were flushed, If not, an appropriate error status.</returns>
+		public NtStatus FlushBuffers(string path, LVFSContextInfo info)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.FlushBuffers(path, info);
+			else
+				return DokanResult.NotImplemented;
+		}
 	}
 }

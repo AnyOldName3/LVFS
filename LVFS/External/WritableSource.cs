@@ -58,5 +58,13 @@ namespace LVFS.External
 		/// <param name="path">The path to the file to check</param>
 		/// <returns><see cref="DokanResult.Success"/> if the file can be delted. If not, an appropriate error status.</returns>
 		public abstract NtStatus CheckFileDeletable(string path);
+
+		/// <summary>
+		/// Clears any buffers for the context, and ensures any buffered data is written to the actual file.
+		/// </summary>
+		/// <param name="path">The path to the file whose buffers to flush</param>
+		/// <param name="info">Information concerning the context for the operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if all buffers were flushed, If not, an appropriate error status.</returns>
+		public abstract NtStatus FlushBuffers(string path, LVFSContextInfo info);
 	}
 }
