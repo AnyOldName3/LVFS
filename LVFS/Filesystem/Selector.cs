@@ -74,14 +74,14 @@ namespace LVFS.Filesystem
 		{
 			var list = Last.ListFiles(path);
 
-			if (list != null && IsWritable)
+			if (list != null && !IsWritable)
 			{
 				var list2 = new List<FileInformation>();
 				foreach (var info in list)
 				{
 					var infoCopy = info;
 					infoCopy.Attributes |= System.IO.FileAttributes.ReadOnly;
-					list2.Add(info);
+					list2.Add(infoCopy);
 				}
 				return list2;
 			}
@@ -97,10 +97,12 @@ namespace LVFS.Filesystem
 		public FileInformation? GetFileInformation(string path)
 		{
 			var info = Last.GetFileInformation(path);
-			if (info.HasValue && IsWritable)
+			if (info.HasValue && !IsWritable)
 			{
 				var value = info.Value;
 				value.Attributes |= System.IO.FileAttributes.ReadOnly;
+				if (path.Contains("Dave.txt"))
+					;
 				return value;
 			}
 			else
