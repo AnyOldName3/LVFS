@@ -203,7 +203,10 @@ namespace LVFS.External
 		/// </summary>
 		/// <param name="path">The file path being queried</param>
 		/// <returns>Whether or not this source or a predecessor controls the specified file.</returns>
-		public abstract bool HasFile(string path);
+		public virtual bool HasFile(string path)
+		{
+			return ControlsFile(path) || PredecessorHasFile(path);
+		}
 
 		/// <summary>
 		/// Lists the files and subdirectories contained within a given directory, including those of the predecessor source.
