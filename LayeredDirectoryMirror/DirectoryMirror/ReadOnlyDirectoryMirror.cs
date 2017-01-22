@@ -27,6 +27,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			return Path.Combine(DirectoryPath, path);
 		}
 
+		/// <inheritdoc/>
 		public override bool CleanupFileHandle(string path, LVFSContextInfo info)
 		{
 			try
@@ -46,6 +47,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			}
 		}
 
+		/// <inheritdoc/>
 		public override bool CloseFileHandle(string path, LVFSContextInfo info)
 		{
 			// This is the same as Cleanup as there's only one thing that might need tidying, but according to a comment in the DokanNet Mirror example, there potentially are situations where only one of the two is called.
@@ -66,11 +68,13 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			}
 		}
 
+		/// <inheritdoc/>
 		public override bool ControlsFile(string path)
 		{
 			return File.Exists(ConvertPath(path)) || Directory.Exists(ConvertPath(path));
 		}
 
+		/// <inheritdoc/>
 		public override NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
 		{
 			var filePath = ConvertPath(path);
@@ -215,6 +219,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			}
 		}
 
+		/// <inheritdoc/>
 		public override FileInformation? GetFileInformation(string path)
 		{
 			var filePath = ConvertPath(path);
@@ -238,6 +243,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			};
 		}
 
+		/// <inheritdoc/>
 		public override FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections)
 		{
 			string fullPath = ConvertPath(path);
@@ -249,6 +255,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				return GetPredecessorFileSystemSecurity(path, sections);
 		}
 
+		/// <inheritdoc/>
 		public override Tuple<long, long, long> GetSpaceInformation()
 		{
 			var driveInfo = DriveInfo.GetDrives().Single(drive => drive.RootDirectory.Name == Path.GetPathRoot(DirectoryPath + "\\"));
@@ -256,6 +263,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			return new Tuple<long, long, long>(driveInfo.TotalFreeSpace, driveInfo.TotalSize, driveInfo.AvailableFreeSpace);
 		}
 
+		/// <inheritdoc/>
 		public override IList<FileInformation> ListFiles(string path)
 		{
 			IList<FileInformation> predecessorList = ListPredecessorFiles(path);
@@ -291,11 +299,13 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			return resultList;
 		}
 
+		/// <inheritdoc/>
 		public override bool OnMount()
 		{
 			return Directory.Exists(DirectoryPath);
 		}
 
+		/// <inheritdoc/>
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			if (info.Context.ContainsKey(this))
@@ -322,6 +332,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				return PredecessorReadFile(path, buffer, out bytesRead, offset, info);
 		}
 
+		/// <inheritdoc/>
 		public override bool TryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
 			if (info.Context.ContainsKey(this))
@@ -340,6 +351,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				return PredecessorTryLockFileRegion(path, startOffset, length, info);
 		}
 
+		/// <inheritdoc/>
 		public override bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
 			if (info.Context.ContainsKey(this))
