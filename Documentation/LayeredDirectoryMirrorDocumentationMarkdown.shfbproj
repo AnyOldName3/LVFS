@@ -37,6 +37,7 @@
     <ContentPlacement>AboveNamespaces</ContentPlacement>
     <DocumentationSources>
       <DocumentationSource sourceFile="..\LayeredDirectoryMirror\LayeredDirectoryMirror.csproj" xmlns="" />
+      <DocumentationSource sourceFile="..\LVFS\LVFS.csproj" />
     </DocumentationSources>
     <WarnOnMissingSourceContext>False</WarnOnMissingSourceContext>
   </PropertyGroup>
