@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +30,21 @@ namespace LVFS.External
 				return predecessor.CheckDirectoryDeletable(path);
 			else
 				return GetPredecessorFileInformation(path) != null ? DokanResult.AccessDenied : DokanResult.PathNotFound;
+		}
+
+		/// <summary>
+		/// As with <see cref="SetFileAttributes(string, FileAttributes)"/>, but for the predecessor source.
+		/// </summary>
+		///<param name="path">The path to the file</param>
+		/// <param name="attributes">The attributes to set</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorSetFileAttributes(string path, FileAttributes attributes)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.SetFileAttributes(path, attributes);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
 		}
 
 		/// <summary>
@@ -94,5 +110,13 @@ namespace LVFS.External
 		/// <param name="info">Information concerning the context of this operation</param>
 		/// <returns><see cref="DokanResult.Success"/> if the requested length is now the length of the file. If not, an appropriate error status.</returns>
 		public abstract NtStatus SetLength(string path, long length, LVFSContextInfo info);
+
+		/// <summary>
+		/// Sets the attributes of a file or directory.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="attributes">The attributes to set</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public abstract NtStatus SetFileAttributes(string path, FileAttributes attributes);
 	}
 }

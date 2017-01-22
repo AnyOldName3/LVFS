@@ -325,5 +325,20 @@ namespace LVFS.Filesystem
 			else
 				return DokanResult.AccessDenied;
 		}
+
+		/// <summary>
+		/// Sets the attributes of a file or directory.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="attributes">The attributes to set</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public NtStatus SetFileAttributes(string path, System.IO.FileAttributes attributes)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.SetFileAttributes(path, attributes);
+			else
+				return DokanResult.AccessDenied;
+		}
 	}
 }

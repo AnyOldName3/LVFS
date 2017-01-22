@@ -190,7 +190,10 @@ namespace LVFS.Filesystem
 
 		public NtStatus SetFileAttributes(string fileName, FileAttributes attributes, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.SetFileAttributes(fileName, attributes);
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)

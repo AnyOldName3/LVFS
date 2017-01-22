@@ -106,6 +106,7 @@
 * SetEndOfFile
 	- Done
 * SetFileAttributes
+	- Done
 * SetFileSecurity
 * SetFileTime
 * WriteFile
