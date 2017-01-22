@@ -9,6 +9,9 @@ using DokanNet;
 
 namespace LVFS.External
 {
+	/// <summary>
+	/// Represents an LVFS source which supports write operations.
+	/// </summary>
 	public abstract class WritableSource : Source
 	{
 		/// <summary>
@@ -29,7 +32,21 @@ namespace LVFS.External
 			if (predecessor != null)
 				return predecessor.CheckDirectoryDeletable(path);
 			else
-				return GetPredecessorFileInformation(path) != null ? DokanResult.AccessDenied : DokanResult.PathNotFound;
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.PathNotFound;
+		}
+
+		/// <summary>
+		/// As with <see cref="CheckFileDeletable(string)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file to check</param>
+		/// <returns>The result for the predecessor if it supports the operation, or a suitable error status if not.</returns>
+		protected NtStatus PredecessorCheckFileDeletable(string path)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.CheckFileDeletable(path);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
 		}
 
 		/// <summary>
@@ -48,17 +65,67 @@ namespace LVFS.External
 		}
 
 		/// <summary>
-		/// As with <see cref="CheckFileDeletable(string)"/>, but for the predecessor source.
+		/// As with <see cref="FlushBuffers(string, LVFSContextInfo)"/>, but for the predecessor source.
 		/// </summary>
-		/// <param name="path">The path to the file to check</param>
-		/// <returns>The result for the predecessor if it supports the operation, or a suitable error status if not.</returns>
-		protected NtStatus PredecessorCheckFileDeletable(string path)
+		/// <param name="path">The path to the file whose buffers to flush</param>
+		/// <param name="info">Information concerning the context for the operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if all buffers were flushed, If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorFlushBuffers(string path, LVFSContextInfo info)
 		{
 			WritableSource predecessor = mPredecessor as WritableSource;
 			if (predecessor != null)
-				return predecessor.CheckFileDeletable(path);
+				return predecessor.FlushBuffers(path, info);
 			else
-				return GetPredecessorFileInformation(path) != null ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+				return DokanResult.Success;
+		}
+
+		/// <summary>
+		/// As with <see cref="MoveFile(string, string, bool, LVFSContextInfo)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="currentPath">The current path of the file/directory</param>
+		/// <param name="newPath">The new path of the file/directory</param>
+		/// <param name="replace">Whether to replace any existing file occupying the new path</param>
+		/// <param name="info">Information concerning the context for this operation.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the file was moved. Otherwise, an appropriate error status.</returns>
+		protected NtStatus PredecessorMoveFile(string currentPath, string newPath, bool replace, LVFSContextInfo info)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.MoveFile(currentPath, newPath, replace, info);
+			else
+				return PredecessorHasFile(currentPath) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+		}
+
+		/// <summary>
+		/// As with <see cref="SetAllocatedSize(string, long, LVFSContextInfo)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="allocationSize">The new size to allocate</param>
+		/// <param name="info">Information concerning the context for this operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if the allocation size was changed or already the correct value. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorSetAllocatedSize(string path, long allocationSize, LVFSContextInfo info)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.SetAllocatedSize(path, allocationSize, info);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+		}
+
+		/// <summary>
+		/// As with <see cref="SetLength(string, long, LVFSContextInfo)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="length">The new length of the file</param>
+		/// <param name="info">Information concerning the context of this operation</param>
+		/// <returns><see cref="DokanResult.Success"/> if the requested length is now the length of the file. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorSetLength(string path, long length, LVFSContextInfo info)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.SetLength(path, length, info);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
 		}
 
 		/// <summary>
