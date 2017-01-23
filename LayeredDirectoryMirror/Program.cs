@@ -12,9 +12,16 @@ using LayeredDirectoryMirror.DirectoryMirror;
 
 namespace LVFS
 {
+	/// <summary>
+	/// The main class used to start the layered directory mirror
+	/// </summary>
 	public class Program
 	{
-		static void Main(string[] args)
+		/// <summary>
+		/// The entry point for the application
+		/// </summary>
+		/// <param name="args"></param>
+		public static void Main(string[] args)
 		{
 			var sourceCount = args.Length - 1;
 			Console.WriteLine("There are " + sourceCount + " sources listed.");

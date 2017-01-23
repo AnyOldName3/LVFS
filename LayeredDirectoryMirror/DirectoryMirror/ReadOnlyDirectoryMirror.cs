@@ -12,10 +12,20 @@ using LVFS.External;
 
 namespace LayeredDirectoryMirror.DirectoryMirror
 {
+	/// <summary>
+	/// An LVFS source which mirrors the contents of a directory, but does not allow any changes to be made to that directory's contents.
+	/// </summary>
 	public class ReadOnlyDirectoryMirror : Source
 	{
+		/// <summary>
+		/// The directory being mirrored
+		/// </summary>
 		public string DirectoryPath { get; private set; }
 
+		/// <summary>
+		/// Construct a <see cref="ReadOnlyDirectoryMirror"/> mirroring the specified directory.
+		/// </summary>
+		/// <param name="path">The path to the directory to mirror.</param>
 		public ReadOnlyDirectoryMirror(string path)
 		{
 			DirectoryPath = path;
@@ -261,6 +271,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			var driveInfo = DriveInfo.GetDrives().Single(drive => drive.RootDirectory.Name == Path.GetPathRoot(DirectoryPath + "\\"));
 
 			return new Tuple<long, long, long>(driveInfo.TotalFreeSpace, driveInfo.TotalSize, driveInfo.AvailableFreeSpace);
+		}
+
+		/// <inheritdoc/>
+		public override bool HasFile(string path)
+		{
+			return ControlsFile(path) || PredecessorHasFile(path);
 		}
 
 		/// <inheritdoc/>
