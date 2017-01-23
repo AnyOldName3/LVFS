@@ -373,5 +373,26 @@ namespace LVFS.Filesystem
 			else
 				return DokanResult.AccessDenied;
 		}
+
+		/// <summary>
+		/// Writes the contents of the buffer to the requested file, starting at the requested offset, and sets the bytes written value to the number of bytes successfully written to the file.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="buffer">A buffer containing the data to write</param>
+		/// <param name="bytesWritten">The number of bytes transferred from the buffer to the file</param>
+		/// <param name="offset">The offset at which to start the write</param>
+		/// <param name="info">Information concerning the context of this operation.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public NtStatus WriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.WriteFile(path, buffer, out bytesWritten, offset, info);
+			else
+			{
+				bytesWritten = 0;
+				return DokanResult.AccessDenied;
+			}
+		}
 	}
 }

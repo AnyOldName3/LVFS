@@ -163,6 +163,27 @@ namespace LVFS.External
 		}
 
 		/// <summary>
+		/// As with <see cref="WriteFile(string, byte[], out int, long, LVFSContextInfo)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="buffer">A buffer containing the data to write</param>
+		/// <param name="bytesWritten">The number of bytes transferred from the buffer to the file</param>
+		/// <param name="offset">The offset at which to start the write</param>
+		/// <param name="info">Information concerning the context of this operation.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorWriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.WriteFile(path, buffer, out bytesWritten, offset, info);
+			else
+			{
+				bytesWritten = 0;
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+			}
+		}
+
+		/// <summary>
 		/// Checks if a directory can be deleted, but doesn't actually do so. Must not return a success result if the directory is non-empty.
 		/// </summary>
 		/// <param name="path">The path to the directory to check</param>
@@ -238,5 +259,16 @@ namespace LVFS.External
 		/// <param name="lastWriteTime">The new last write time for the file, or <c>null</c> if it is not to be changed.</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
 		public abstract NtStatus SetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime);
+
+		/// <summary>
+		/// Writes the contents of the buffer to the requested file, starting at the requested offset, and sets the bytes written value to the number of bytes successfully written to the file.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="buffer">A buffer containing the data to write</param>
+		/// <param name="bytesWritten">The number of bytes transferred from the buffer to the file</param>
+		/// <param name="offset">The offset at which to start the write</param>
+		/// <param name="info">Information concerning the context of this operation.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public abstract NtStatus WriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info);
 	}
 }

@@ -255,7 +255,10 @@ namespace LVFS.Filesystem
 		public NtStatus WriteFile(string fileName, byte[] buffer, out int bytesWritten, long offset, DokanFileInfo info)
 		{
 			bytesWritten = 0;
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.WriteFile(fileName, buffer, out bytesWritten, offset, new LVFSContextInfo(info));
+			else
+				return DokanResult.NotImplemented;
 		}
 	}
 }
