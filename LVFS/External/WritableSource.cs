@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -129,6 +130,22 @@ namespace LVFS.External
 		}
 
 		/// <summary>
+		/// As with <see cref="SetFileSecurity(string, FileSystemSecurity, AccessControlSections)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="security">The security to set</param>
+		/// <param name="sections">The access control sections to change</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorSetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.SetFileSecurity(path, security, sections);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+		}
+
+		/// <summary>
 		/// Checks if a directory can be deleted, but doesn't actually do so. Must not return a success result if the directory is non-empty.
 		/// </summary>
 		/// <param name="path">The path to the directory to check</param>
@@ -185,5 +202,14 @@ namespace LVFS.External
 		/// <param name="attributes">The attributes to set</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
 		public abstract NtStatus SetFileAttributes(string path, FileAttributes attributes);
+
+		/// <summary>
+		/// Sets the security attributes for the specified sections of the specified file or directory.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="security">The security to set</param>
+		/// <param name="sections">The access control sections to change</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public abstract NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections);
 	}
 }
