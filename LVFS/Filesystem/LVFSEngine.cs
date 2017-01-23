@@ -228,7 +228,10 @@ namespace LVFS.Filesystem
 		/// <inheritdoc/>
 		public NtStatus SetFileTime(string fileName, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime, DokanFileInfo info)
 		{
-			return DokanResult.NotImplemented;
+			if (mSelector.IsWritable)
+				return mSelector.SetFileTimes(fileName, creationTime, lastAccessTime, lastWriteTime);
+			else
+				return DokanResult.NotImplemented;
 		}
 
 		/// <inheritdoc/>

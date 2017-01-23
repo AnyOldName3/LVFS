@@ -356,5 +356,22 @@ namespace LVFS.Filesystem
 			else
 				return DokanResult.AccessDenied;
 		}
+
+		/// <summary>
+		/// Sets the creation, last access, and last modification times for a file if they are specified. Any null values mean the value will not be changed.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="creationTime">The new creation time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastAccessTime">The new last access time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastWriteTime">The new last write time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public NtStatus SetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime)
+		{
+			WritableSource writable = Last as WritableSource;
+			if (writable != null)
+				return writable.SetFileTimes(path, creationTime, lastAccessTime, lastWriteTime);
+			else
+				return DokanResult.AccessDenied;
+		}
 	}
 }

@@ -146,6 +146,23 @@ namespace LVFS.External
 		}
 
 		/// <summary>
+		/// As with <see cref="SetFileTimes(string, DateTime?, DateTime?, DateTime?)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="creationTime">The new creation time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastAccessTime">The new last access time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastWriteTime">The new last write time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		protected NtStatus PredecessorSetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime)
+		{
+			WritableSource predecessor = mPredecessor as WritableSource;
+			if (predecessor != null)
+				return predecessor.SetFileTimes(path, creationTime, lastAccessTime, lastWriteTime);
+			else
+				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
+		}
+
+		/// <summary>
 		/// Checks if a directory can be deleted, but doesn't actually do so. Must not return a success result if the directory is non-empty.
 		/// </summary>
 		/// <param name="path">The path to the directory to check</param>
@@ -211,5 +228,15 @@ namespace LVFS.External
 		/// <param name="sections">The access control sections to change</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
 		public abstract NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections);
+
+		/// <summary>
+		/// Sets the creation, last access, and last modification times for a file if they are specified. Any null values mean the value will not be changed.
+		/// </summary>
+		/// <param name="path">The path to the file</param>
+		/// <param name="creationTime">The new creation time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastAccessTime">The new last access time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <param name="lastWriteTime">The new last write time for the file, or <c>null</c> if it is not to be changed.</param>
+		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
+		public abstract NtStatus SetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime);
 	}
 }
