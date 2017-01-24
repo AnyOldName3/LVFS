@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DirectoryMirror\ReadOnlyDirectoryMirror.cs" />
+    <Compile Include="DirectoryMirror\WritableDirectoryMirror.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

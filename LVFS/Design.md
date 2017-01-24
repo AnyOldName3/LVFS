@@ -157,3 +157,27 @@
 	- Done
 * TryUnlockFileRegion
 	- Done
+
+#WritableDirectoryMirror
+* CheckDirectoryDeletable
+* CheckFileDeletable
+* CleanupFileHandle
+* CloseFileHandle
+* ControlsFile
+* CreateFileHandle
+* FlushBuffers
+* GetFileInformation
+* GetFileSystemSecurity
+* GetSpaceInformation
+* HasFile
+* ListFiles
+* MoveFile
+* ReadFile
+* SetAllocatedSize
+* SetFileAttributes
+* SetFileSecurity
+* SetFileTimes
+* SetLength
+* TryLockFileRegion
+* TryUnlockFileRegion
+* WriteFile
