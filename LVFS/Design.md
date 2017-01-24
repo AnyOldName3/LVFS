@@ -162,22 +162,33 @@
 * CheckDirectoryDeletable
 * CheckFileDeletable
 * CleanupFileHandle
+	- Done
 * CloseFileHandle
+	- Done
 * ControlsFile
+	- Done
 * CreateFileHandle
 * FlushBuffers
 * GetFileInformation
+	- Done
 * GetFileSystemSecurity
+	- Done
 * GetSpaceInformation
+	- Done
 * HasFile
+	- Done
 * ListFiles
+	- Done
 * MoveFile
 * ReadFile
+	- Done
 * SetAllocatedSize
 * SetFileAttributes
 * SetFileSecurity
 * SetFileTimes
 * SetLength
 * TryLockFileRegion
+	- Done
 * TryUnlockFileRegion
+	- Done
 * WriteFile
