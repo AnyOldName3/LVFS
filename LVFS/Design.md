@@ -160,7 +160,9 @@
 
 #WritableDirectoryMirror
 * CheckDirectoryDeletable
+	- Done
 * CheckFileDeletable
+	- Done
 * CleanupFileHandle
 	- Done
 * CloseFileHandle

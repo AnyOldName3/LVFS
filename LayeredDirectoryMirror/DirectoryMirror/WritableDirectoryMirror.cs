@@ -40,13 +40,21 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
-			throw new NotImplementedException();
+			if (!Directory.Exists(ConvertPath(path)))
+				return DokanResult.PathNotFound;
+			else
+				return Directory.EnumerateFileSystemEntries(ConvertPath(path)).Any() ? DokanResult.DirectoryNotEmpty : DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
 		public override NtStatus CheckFileDeletable(string path)
 		{
-			throw new NotImplementedException();
+			if (Directory.Exists(ConvertPath(path)))
+				return DokanResult.AccessDenied;
+			else if (!File.Exists(ConvertPath(path)))
+				return DokanResult.FileNotFound;
+			else
+				return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
