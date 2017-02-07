@@ -113,7 +113,17 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus FlushBuffers(string path, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				FileStream stream = info.Context[this] as FileStream;
+				if (stream != null)
+					stream.Flush();
+				return DokanResult.Success;
+			}
+			catch (IOException)
+			{
+				return DokanResult.DiskFull;
+			}
 		}
 
 		/// <inheritdoc/>

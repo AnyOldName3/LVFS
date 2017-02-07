@@ -171,6 +171,7 @@
 	- Done
 * CreateFileHandle
 * FlushBuffers
+	- Done
 * GetFileInformation
 	- Done
 * GetFileSystemSecurity
