@@ -187,6 +187,7 @@
 * ReadFile
 	- Done
 * SetAllocatedSize
+	- Skipped
 * SetFileAttributes
 	- Done
 * SetFileSecurity

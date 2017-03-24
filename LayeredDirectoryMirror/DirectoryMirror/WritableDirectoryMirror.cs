@@ -343,7 +343,8 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus SetAllocatedSize(string path, long allocationSize, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			// C# offers no ability to allocate space for a file without actually setting its length, so this function cannot be implemented without calling native code. In the mirror example, this is implemented with incorrect semantics
+			return DokanResult.NotImplemented;
 		}
 
 		/// <inheritdoc/>
