@@ -241,7 +241,70 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus MoveFile(string currentPath, string newPath, bool replace, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			var fullCurrentPath = ConvertPath(currentPath);
+			var fullNewPath = ConvertPath(newPath);
+
+			if (ControlsFile(currentPath))
+			{
+				try
+				{
+					(info.Context[this] as FileStream)?.Dispose();
+					info.Context[this] = null;
+
+					if (!HasFile(newPath))
+					{
+						if (info.IsDirectory)
+							Directory.Move(fullCurrentPath, fullNewPath);
+						else
+							File.Move(fullCurrentPath, fullNewPath);
+
+						return DokanResult.Success;
+					}
+					else if (replace)
+					{
+						// Delete the original if possible, but otherwise ignore it when it's in another layer as it doesn't affect the external behaviour of the VFS
+
+						// replace is incompatible with directories
+						if (info.IsDirectory)
+							return DokanResult.AccessDenied;
+
+						if (ControlsFile(newPath))
+						{
+							try
+							{
+								File.Delete(fullNewPath);
+								File.Move(fullCurrentPath, fullNewPath);
+								return DokanResult.Success;
+							}
+							catch (UnauthorizedAccessException)
+							{
+								return DokanResult.AccessDenied;
+							}
+						}
+						else
+						{
+							// A predecessor source has the file to be replaced, so we can ignore it.
+							try
+							{
+								File.Move(fullCurrentPath, fullNewPath);
+								return DokanResult.Success;
+							}
+							catch (UnauthorizedAccessException)
+							{
+								return DokanResult.AccessDenied;
+							}
+						}
+					}
+					else
+						return DokanResult.FileExists;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+			}
+			else
+				return PredecessorMoveFile(currentPath, newPath, replace, info);
 		}
 
 		/// <inheritdoc/>

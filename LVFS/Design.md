@@ -183,6 +183,7 @@
 * ListFiles
 	- Done
 * MoveFile
+	- Done
 * ReadFile
 	- Done
 * SetAllocatedSize
