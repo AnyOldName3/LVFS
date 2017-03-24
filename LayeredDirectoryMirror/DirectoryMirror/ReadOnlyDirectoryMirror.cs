@@ -280,6 +280,19 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		}
 
 		/// <inheritdoc/>
+		public override bool HasFilesInDirectory(string path)
+		{
+			string converted = ConvertPath(path);
+			if (Directory.Exists(converted))
+			{
+				if (Directory.EnumerateFileSystemEntries(converted).Any())
+					return true;
+			}
+			return PredecessorHasFilesInDirectory(path);
+
+		}
+
+		/// <inheritdoc/>
 		public override IList<FileInformation> ListFiles(string path)
 		{
 			IList<FileInformation> predecessorList = ListPredecessorFiles(path);

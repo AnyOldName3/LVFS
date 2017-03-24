@@ -60,6 +60,16 @@ namespace LVFS.External
 		}
 
 		/// <summary>
+		/// As with <see cref="HasFilesInDirectory(string)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The directory path being queried</param>
+		/// <returns>True if the directory exists and is not empty.</returns>
+		protected bool PredecessorHasFilesInDirectory(string path)
+		{
+			return mPredecessor?.HasFilesInDirectory(path) ?? false;
+		}
+
+		/// <summary>
 		/// As with ListFiles, but for the predecessor source.
 		/// </summary>
 		/// <param name="path">The path of the directory to list the contents of</param>
@@ -204,6 +214,13 @@ namespace LVFS.External
 		/// <param name="path">The file path being queried</param>
 		/// <returns>Whether or not this source or a predecessor controls the specified file.</returns>
 		public abstract bool HasFile(string path);
+
+		/// <summary>
+		/// Gets whether or not this source or a predecessor exposes a directory which is non-empty.
+		/// </summary>
+		/// <param name="path">The directory path being queried</param>
+		/// <returns>True if the directory exists and is not empty.</returns>
+		public abstract bool HasFilesInDirectory(string path);
 
 		/// <summary>
 		/// Lists the files and subdirectories contained within a given directory, including those of the predecessor source.

@@ -41,9 +41,11 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
 			if (!Directory.Exists(ConvertPath(path)))
-				return DokanResult.PathNotFound;
+				return PredecessorCheckDirectoryDeletable(path);
 			else
-				return Directory.EnumerateFileSystemEntries(ConvertPath(path)).Any() ? DokanResult.DirectoryNotEmpty : DokanResult.Success;
+			{
+				return Directory.EnumerateFileSystemEntries(ConvertPath(path)).Any() || PredecessorHasFilesInDirectory(path) ? DokanResult.DirectoryNotEmpty : DokanResult.Success;
+			}
 		}
 
 		/// <inheritdoc/>
@@ -52,7 +54,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			if (Directory.Exists(ConvertPath(path)))
 				return DokanResult.AccessDenied;
 			else if (!File.Exists(ConvertPath(path)))
-				return DokanResult.FileNotFound;
+				return PredecessorCheckFileDeletable(path);
 			else
 				return DokanResult.Success;
 		}
@@ -68,11 +70,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 					(context as FileStream)?.Dispose();
 					info.Context.Remove(this);
 				}
-				return true;
+				return PredecessorCleanupFileHandle(path, info);
 			}
 			catch (Exception)
 			{
 				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+				PredecessorCleanupFileHandle(path, info);
 				return false;
 			}
 		}
@@ -89,11 +92,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 					(context as FileStream)?.Dispose();
 					info.Context.Remove(this);
 				}
-				return true;
+				return PredecessorCleanupFileHandle(path, info);
 			}
 			catch (Exception)
 			{
 				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+				PredecessorCleanupFileHandle(path, info);
 				return false;
 			}
 		}
@@ -113,17 +117,27 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus FlushBuffers(string path, LVFSContextInfo info)
 		{
-			try
+			NtStatus result = DokanResult.Success;
+			if (info.Context.ContainsKey(this))
 			{
-				FileStream stream = info.Context[this] as FileStream;
-				if (stream != null)
-					stream.Flush();
-				return DokanResult.Success;
+				try
+				{
+					FileStream stream = info.Context[this] as FileStream;
+					if (stream != null)
+						stream.Flush();
+				}
+				catch (IOException)
+				{
+					result =  DokanResult.DiskFull;
+				}
 			}
-			catch (IOException)
-			{
-				return DokanResult.DiskFull;
-			}
+
+			NtStatus predecessorResult =  PredecessorFlushBuffers(path, info);
+
+			if (result == DokanResult.Success && predecessorResult != DokanResult.Success)
+				return predecessorResult;
+			else
+				return result;
 		}
 
 		/// <inheritdoc/>
@@ -174,6 +188,18 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		public override bool HasFile(string path)
 		{
 			return ControlsFile(path) || PredecessorHasFile(path);
+		}
+
+		/// <inheritdoc/>
+		public override bool HasFilesInDirectory(string path)
+		{
+			string converted = ConvertPath(path);
+			if (Directory.Exists(converted))
+			{
+				if (Directory.EnumerateFileSystemEntries(converted).Any())
+					return true;
+			}
+			return PredecessorHasFilesInDirectory(path);
 		}
 
 		/// <inheritdoc/>
