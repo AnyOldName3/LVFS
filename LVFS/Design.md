@@ -188,6 +188,7 @@
 	- Done
 * SetAllocatedSize
 * SetFileAttributes
+	- Done
 * SetFileSecurity
 * SetFileTimes
 * SetLength

@@ -349,7 +349,28 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus SetFileAttributes(string path, FileAttributes attributes)
 		{
-			throw new NotImplementedException();
+			if (ControlsFile(path))
+			{
+				try
+				{
+					File.SetAttributes(ConvertPath(path), attributes);
+					return DokanResult.Success;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+				catch (FileNotFoundException)
+				{
+					return DokanResult.FileNotFound;
+				}
+				catch (DirectoryNotFoundException)
+				{
+					return DokanResult.PathNotFound;
+				}
+			}
+			else
+				return PredecessorSetFileAttributes(path, attributes);
 		}
 
 		/// <inheritdoc/>
