@@ -250,6 +250,8 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				{
 					(info.Context[this] as FileStream)?.Dispose();
 					info.Context[this] = null;
+					
+					// Maybe reopen file stream once file is moved.
 
 					if (!HasFile(newPath))
 					{
@@ -451,7 +453,28 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus SetLength(string path, long length, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (ControlsFile(path))
+			{
+				try
+				{
+					var stream = info.Context[this] as FileStream;
+					if (stream != null)
+						stream.SetLength(length);
+					else
+						new FileStream(ConvertPath(path), FileMode.Open).SetLength(length);
+					return DokanResult.Success;
+				}
+				catch (IOException)
+				{
+					return DokanResult.DiskFull;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+			}
+			else
+				return PredecessorSetLength(path, length, info);
 		}
 
 		/// <inheritdoc/>
