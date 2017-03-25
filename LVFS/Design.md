@@ -193,6 +193,7 @@
 * SetFileSecurity
 	- Done
 * SetFileTimes
+	- Done
 * SetLength
 * TryLockFileRegion
 	- Done

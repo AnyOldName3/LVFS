@@ -421,7 +421,31 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus SetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime)
 		{
-			throw new NotImplementedException();
+			if (ControlsFile(path))
+			{
+				var realPath = ConvertPath(path);
+				try
+				{
+					if (creationTime.HasValue)
+						File.SetCreationTime(realPath, creationTime.Value);
+					if (lastAccessTime.HasValue)
+						File.SetLastAccessTime(realPath, lastAccessTime.Value);
+					if (lastWriteTime.HasValue)
+						File.SetLastWriteTime(realPath, lastWriteTime.Value);
+
+					return DokanResult.Success;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+				catch (FileNotFoundException)
+				{
+					return DokanResult.FileNotFound;
+				}
+			}
+			else
+				return PredecessorSetFileTimes(path, creationTime, lastAccessTime, lastWriteTime);
 		}
 
 		/// <inheritdoc/>
