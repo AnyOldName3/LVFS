@@ -518,7 +518,56 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus WriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context[this] != null)
+			{
+				try
+				{
+					var stream = info.Context[this] as FileStream;
+					lock (stream)
+					{
+						stream.Position = offset;
+						stream.Write(buffer, 0, buffer.Length);
+					}
+					bytesWritten = buffer.Length;
+
+					return DokanResult.Success;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					bytesWritten = 0;
+					return DokanResult.AccessDenied;
+				}
+				catch (IOException)
+				{
+					bytesWritten = 0;
+					return DokanResult.DiskFull;
+				}
+			}
+			else if (ControlsFile(path))
+			{
+				using (var stream = new FileStream(ConvertPath(path), FileMode.Open, System.IO.FileAccess.Write))
+				{
+					try
+					{
+						stream.Position = offset;
+						stream.Write(buffer, 0, buffer.Length);
+						bytesWritten = buffer.Length;
+					}
+					catch (UnauthorizedAccessException)
+					{
+						bytesWritten = 0;
+						return DokanResult.AccessDenied;
+					}
+					catch (IOException)
+					{
+						bytesWritten = 0;
+						return DokanResult.DiskFull;
+					}
+				}
+				return DokanResult.Success;
+			}
+			else
+				return PredecessorWriteFile(path, buffer, out bytesWritten, offset, info);
 		}
 	}
 }
