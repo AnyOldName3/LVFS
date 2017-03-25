@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,19 +11,16 @@ namespace LVFS
 {
 	class Test
 	{
-		static string DirectoryPath = "G:\\Chris\\Documents";
-
-		private static string ConvertPath(string path)
-		{
-			path = path.Substring(1);
-			return Path.Combine(DirectoryPath, path);
-		}
-
 		static void Main(string[] args)
 		{
+			FileSecurity fSecurity = File.GetAccessControl(args[0], AccessControlSections.Owner);
 
-			Console.WriteLine(ConvertPath("\\TestFolder\\"));
-			;
+			var owner = fSecurity.GetOwner(typeof(SecurityIdentifier));
+			Console.WriteLine(owner);
+			if (owner == null)
+				Console.WriteLine("Null owner!");
+			else
+				Console.WriteLine(owner.Value);
 		}
 	}
 }

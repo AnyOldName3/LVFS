@@ -191,6 +191,7 @@
 * SetFileAttributes
 	- Done
 * SetFileSecurity
+	- Done
 * SetFileTimes
 * SetLength
 * TryLockFileRegion

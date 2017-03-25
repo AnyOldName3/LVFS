@@ -375,9 +375,47 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		}
 
 		/// <inheritdoc/>
-		public override NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections)
+		public override NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (ControlsFile(path))
+			{
+				FileSystemSecurity actualSecurity;
+				if (info.IsDirectory)
+					actualSecurity = Directory.GetAccessControl(ConvertPath(path), sections);
+				else
+					actualSecurity = File.GetAccessControl(ConvertPath(path), sections);
+				
+				if (sections.HasFlag(AccessControlSections.Owner))
+					actualSecurity.SetOwner(security.GetOwner(typeof(System.Security.Principal.SecurityIdentifier)));
+				if (sections.HasFlag(AccessControlSections.Group))
+					actualSecurity.SetGroup(security.GetGroup(typeof(System.Security.Principal.SecurityIdentifier)));
+				if (sections.HasFlag(AccessControlSections.Access))
+				{
+					var oldDacl = actualSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
+					foreach (var rule in oldDacl)
+						actualSecurity.RemoveAccessRule(rule as FileSystemAccessRule);
+					var dacl = security.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
+					foreach (var rule in dacl)
+						actualSecurity.AddAccessRule(rule as FileSystemAccessRule);
+				}
+				if (sections.HasFlag(AccessControlSections.Audit))
+				{
+					var oldSacl = actualSecurity.GetAuditRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
+					foreach (var rule in oldSacl)
+						actualSecurity.RemoveAuditRule(rule as FileSystemAuditRule);
+					var sacl = security.GetAuditRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
+					foreach (var rule in sacl)
+						actualSecurity.AddAuditRule(rule as FileSystemAuditRule);
+				}
+
+				if (info.IsDirectory)
+					Directory.SetAccessControl(ConvertPath(path), actualSecurity as DirectorySecurity);
+				else
+					File.SetAccessControl(ConvertPath(path), actualSecurity as FileSecurity);
+				return DokanResult.Success;
+			}
+			else
+				return PredecessorSetFileSecurity(path, security, sections, info);
 		}
 
 		/// <inheritdoc/>

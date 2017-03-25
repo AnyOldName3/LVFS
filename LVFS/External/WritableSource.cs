@@ -130,17 +130,17 @@ namespace LVFS.External
 		}
 
 		/// <summary>
-		/// As with <see cref="SetFileSecurity(string, FileSystemSecurity, AccessControlSections)"/>, but for the predecessor source.
+		/// As with <see cref="SetFileSecurity(string, FileSystemSecurity, AccessControlSections, LVFSContextInfo)"/>, but for the predecessor source.
 		/// </summary>
 		/// <param name="path">The path to the file</param>
 		/// <param name="security">The security to set</param>
 		/// <param name="sections">The access control sections to change</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
-		protected NtStatus PredecessorSetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections)
+		protected NtStatus PredecessorSetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info)
 		{
 			WritableSource predecessor = mPredecessor as WritableSource;
 			if (predecessor != null)
-				return predecessor.SetFileSecurity(path, security, sections);
+				return predecessor.SetFileSecurity(path, security, sections, info);
 			else
 				return PredecessorHasFile(path) ? DokanResult.AccessDenied : DokanResult.FileNotFound;
 		}
@@ -247,8 +247,9 @@ namespace LVFS.External
 		/// <param name="path">The path to the file</param>
 		/// <param name="security">The security to set</param>
 		/// <param name="sections">The access control sections to change</param>
+		/// <param name="info">Information concerning the context of this operation.</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
-		public abstract NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections);
+		public abstract NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info);
 
 		/// <summary>
 		/// Sets the creation, last access, and last modification times for a file if they are specified. Any null values mean the value will not be changed.
