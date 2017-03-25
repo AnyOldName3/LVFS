@@ -220,7 +220,7 @@ namespace LVFS.Filesystem
 		public NtStatus SetFileSecurity(string fileName, FileSystemSecurity security, AccessControlSections sections, DokanFileInfo info)
 		{
 			if (mSelector.IsWritable)
-				return mSelector.SetFileSecurity(fileName, security, sections);
+				return mSelector.SetFileSecurity(fileName, security, sections, new LVFSContextInfo(info));
 			else
 				return DokanResult.NotImplemented;
 		}

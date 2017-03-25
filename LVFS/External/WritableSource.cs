@@ -135,6 +135,7 @@ namespace LVFS.External
 		/// <param name="path">The path to the file</param>
 		/// <param name="security">The security to set</param>
 		/// <param name="sections">The access control sections to change</param>
+		/// <param name="info">Information concerning the context of this operation</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
 		protected NtStatus PredecessorSetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info)
 		{

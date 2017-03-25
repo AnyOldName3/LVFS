@@ -347,12 +347,13 @@ namespace LVFS.Filesystem
 		/// <param name="path">The path to the file</param>
 		/// <param name="security">The security to set</param>
 		/// <param name="sections">The access control sections to change</param>
+		/// <param name="info">Information concerning the context of this operation.</param>
 		/// <returns><see cref="DokanResult.Success"/> if the operation was successful. If not, an appropriate error status.</returns>
-		public NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections)
+		public NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info)
 		{
 			WritableSource writable = Last as WritableSource;
 			if (writable != null)
-				return writable.SetFileSecurity(path, security, sections);
+				return writable.SetFileSecurity(path, security, sections, info);
 			else
 				return DokanResult.AccessDenied;
 		}

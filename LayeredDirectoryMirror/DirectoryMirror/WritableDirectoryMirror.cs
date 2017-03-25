@@ -111,6 +111,26 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
 		{
+			var controlsFile = ControlsFile(path);
+
+			if (!controlsFile)
+				return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+
+			var convertedPath = ConvertPath(path);
+			var directoryExists = Directory.Exists(convertedPath);
+
+			if (info.IsDirectory)
+			{
+				try
+				{
+
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+			}
+
 			throw new NotImplementedException();
 		}
 
