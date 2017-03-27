@@ -118,16 +118,86 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 
 			var convertedPath = ConvertPath(path);
 			var directoryExists = Directory.Exists(convertedPath);
+			var fileExists = File.Exists(convertedPath);
 
 			if (info.IsDirectory)
 			{
 				try
 				{
-
+					switch (mode)
+					{
+						case FileMode.Open:
+							{
+								if (directoryExists)
+									return DokanResult.Success;
+								else if (fileExists)
+									return NtStatus.NotADirectory;
+								else
+									return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							}
+						case FileMode.CreateNew:
+							{
+								if (directoryExists)
+									return DokanResult.AlreadyExists;
+								else if (fileExists)
+									return DokanResult.FileExists;
+								else if (PredecessorHasFile(path))
+									return DokanResult.AlreadyExists;
+								else
+								{
+									Directory.CreateDirectory(convertedPath);
+									return DokanResult.Success;
+								}
+							}
+						case FileMode.OpenOrCreate:
+							{
+								if (directoryExists)
+									return DokanResult.Success;
+								else if (fileExists)
+									return NtStatus.NotADirectory;
+								else if (PredecessorHasFile(path))
+									return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+								else
+								{
+									Directory.CreateDirectory(convertedPath);
+									return DokanResult.Success;
+								}
+							}
+						default:
+							{
+								// I don't think any other file modes can actually used with directories, so we should be free to die in any arbitrary way here. In fact, I don't think OpenOrCreate can actually be used with directories either, but the associated behaviour was simple enough, so I implemented it anyway.
+								return DokanResult.NotImplemented;
+							}
+					}
 				}
 				catch (UnauthorizedAccessException)
 				{
 					return DokanResult.AccessDenied;
+				}
+			}
+			else
+			{
+				switch (mode)
+				{
+					case FileMode.Open:
+						{
+							if (fileExists || directoryExists)
+							{
+								var dataAccess = DokanNet.FileAccess.ReadData | DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Execute | DokanNet.FileAccess.GenericExecute | DokanNet.FileAccess.GenericWrite | DokanNet.FileAccess.GenericRead;
+								var readWriteOnlyAttributes = (access & dataAccess) == 0;
+
+								if (directoryExists || readWriteOnlyAttributes)
+								{
+									if (directoryExists && access.HasFlag(DokanNet.FileAccess.Delete) && !access.HasFlag(DokanNet.FileAccess.Synchronize))
+										// Delete request on (potentially) non-empty directory
+										return DokanResult.AccessDenied;
+
+									info.IsDirectory = directoryExists;
+
+									return DokanResult.Success;
+								}
+							}
+						}
 				}
 			}
 
