@@ -24,6 +24,13 @@ namespace LVFS
 		public static void Main(string[] args)
 		{
 			var sourceCount = args.Length - 1;
+
+			if (sourceCount < 1)
+			{
+				Console.Error.WriteLine("You must specify a destination and at least one source.");
+				return;
+			}
+
 			Console.WriteLine("There are " + sourceCount + " sources listed.");
 
 			Console.Write("Attempting to mirror ");
@@ -36,7 +43,9 @@ namespace LVFS
 			LVFSInterface lvfs = new LVFSInterface("Mirror");
 
 			for (var i = 1; i < args.Length; i++)
-				lvfs.AddSource(new ReadOnlyDirectoryMirror(args[i]));
+			{
+				lvfs.AddSource(args[i].StartsWith("-w=") ? (Source) new WritableDirectoryMirror(args[i].Substring(3)) : new ReadOnlyDirectoryMirror(args[i]));
+			}
 
 			try
 			{
