@@ -196,12 +196,88 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 
 									return DokanResult.Success;
 								}
+								else
+									// Go to the regular handler
+									break;
 							}
+							else
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 						}
+					case FileMode.OpenOrCreate:
+					case FileMode.Create:
+					case FileMode.Append:
+						{
+							if (fileExists || directoryExists)
+								// Go to the regular handler
+								break;
+							else if (PredecessorHasFile(path))
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							else
+								// Go to the regular handler
+								break;
+						}
+					case FileMode.CreateNew:
+						{
+							if (fileExists || directoryExists || PredecessorHasFile(path))
+								return DokanResult.AlreadyExists;
+							else
+								// Go to the regular handler
+								break;
+						}
+					case FileMode.Truncate:
+						{
+							if (fileExists || directoryExists)
+								// Go to the regular handler
+								break;
+							else if (PredecessorHasFile(path))
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							else
+								return DokanResult.FileNotFound;
+						}
+					default:
+						// This code should never be reached
+						throw new ArgumentException("Unknown file mode: " + mode, nameof(mode));
+				}
+
+				var dataWriteAccess = DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Delete | DokanNet.FileAccess.GenericWrite;
+				var readAccessOnly = (access & dataWriteAccess) == 0;
+
+				try
+				{
+					var result = DokanResult.Success;
+
+					info.Context[this] = new FileStream(convertedPath, mode, readAccessOnly ? System.IO.FileAccess.Read : System.IO.FileAccess.ReadWrite, share, 4096, options);
+
+					if ((fileExists || directoryExists) && (mode == FileMode.OpenOrCreate || mode == FileMode.Create))
+						result = DokanResult.AlreadyExists;
+
+					if (mode == FileMode.CreateNew || mode == FileMode.Create)
+						attributes |= FileAttributes.Archive;
+
+					File.SetAttributes(convertedPath, attributes);
+
+					return result;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+				catch (DirectoryNotFoundException)
+				{
+					return DokanResult.PathNotFound;
+				}
+				catch (Exception ex)
+				{
+					var hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex);
+					switch (hr)
+					{
+						case 0x80070020: //Sharing violation
+							return DokanResult.SharingViolation;
+						default:
+							throw;
+					}
 				}
 			}
-
-			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc/>
