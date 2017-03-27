@@ -113,7 +113,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		{
 			var controlsFile = ControlsFile(path);
 
-			if (!controlsFile)
+			if (!controlsFile && PredecessorHasFile(path))
 				return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 			var convertedPath = ConvertPath(path);
