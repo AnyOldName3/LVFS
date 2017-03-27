@@ -163,35 +163,38 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 								break;
 						}
 						else
-							return DokanResult.FileNotFound;
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					case FileMode.OpenOrCreate:
 						if (pathExists)
 							// Go to the regular handler
 							break;
 						else
-							return DokanResult.AccessDenied;
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					case FileMode.CreateNew:
 						if (pathExists)
 							return DokanResult.FileExists;
 						else
-							return DokanResult.AccessDenied;
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					case FileMode.Truncate:
 						if (pathExists)
 							return DokanResult.AccessDenied;
 						else
-							return DokanResult.FileNotFound;
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					case FileMode.Create:
-						return DokanResult.AccessDenied;
+						if (pathExists)
+							return DokanResult.AccessDenied;
+						else
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					case FileMode.Append:
 						if (pathExists)
 							return DokanResult.AccessDenied;
 						else
-							return DokanResult.FileNotFound;
+							return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 
 					default:
 						// This code should never be reached

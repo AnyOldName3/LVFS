@@ -13,14 +13,7 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			FileSecurity fSecurity = File.GetAccessControl(args[0], AccessControlSections.Owner);
-
-			var owner = fSecurity.GetOwner(typeof(SecurityIdentifier));
-			Console.WriteLine(owner);
-			if (owner == null)
-				Console.WriteLine("Null owner!");
-			else
-				Console.WriteLine(owner.Value);
+			Console.WriteLine(File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory));
 		}
 	}
 }
