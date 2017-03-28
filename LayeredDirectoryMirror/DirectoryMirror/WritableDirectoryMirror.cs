@@ -70,6 +70,15 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 					(context as FileStream)?.Dispose();
 					info.Context.Remove(this);
 				}
+
+				if (info.DeleteOnClose)
+				{
+					if (info.IsDirectory && Directory.Exists(ConvertPath(path)))
+						Directory.Delete(ConvertPath(path));
+					else if (File.Exists(ConvertPath(path)))
+						File.Delete(ConvertPath(path));
+				}
+
 				return PredecessorCleanupFileHandle(path, info);
 			}
 			catch (Exception)
@@ -87,11 +96,21 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			try
 			{
 				object context;
+
 				if (info.Context.TryGetValue(this, out context))
 				{
 					(context as FileStream)?.Dispose();
 					info.Context.Remove(this);
 				}
+
+				if (info.DeleteOnClose)
+				{
+					if (info.IsDirectory && Directory.Exists(ConvertPath(path)))
+						Directory.Delete(ConvertPath(path));
+					else if (File.Exists(ConvertPath(path)))
+						File.Delete(ConvertPath(path));
+				}
+
 				return PredecessorCleanupFileHandle(path, info);
 			}
 			catch (Exception)
@@ -414,7 +433,9 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			{
 				try
 				{
-					(info.Context[this] as FileStream)?.Dispose();
+					object context;
+					info.Context.TryGetValue(this, out context);
+					(context as FileStream)?.Dispose();
 					info.Context[this] = null;
 					
 					// Maybe reopen file stream once file is moved.
@@ -511,8 +532,8 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus SetAllocatedSize(string path, long allocationSize, LVFSContextInfo info)
 		{
-			// C# offers no ability to allocate space for a file without actually setting its length, so this function cannot be implemented without calling native code. In the mirror example, this is implemented with incorrect semantics
-			return DokanResult.NotImplemented;
+			// C# offers no ability to allocate space for a file without actually setting its length, so this function cannot be implemented without calling native code. In the mirror example, this is implemented with incorrect semantics. Despite that, many operations require this to claim to work, so we return success whenever this is called.
+			return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>

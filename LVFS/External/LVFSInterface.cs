@@ -44,7 +44,7 @@ namespace LVFS.External
 		/// <param name="mountPoint">The mount point to use.</param>
 		public void Mount(string mountPoint)
 		{
-			mEngine.Mount(mountPoint);
+			mEngine.Mount(mountPoint, new DokanNet.Logging.ConsoleLogger());
 		}
 	}
 }
