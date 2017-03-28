@@ -128,7 +128,7 @@ namespace LVFS.External
 					case FileMode.OpenOrCreate:
 						return DokanResult.AccessDenied;
 					default:
-						return info.IsDirectory ? DokanResult.PathNotFound : DokanResult.FileNotFound;
+						return DokanResult.FileNotFound;
 				}
 			}
 		}
