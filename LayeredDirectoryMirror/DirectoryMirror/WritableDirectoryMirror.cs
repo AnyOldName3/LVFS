@@ -265,9 +265,9 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				{
 					var result = DokanResult.Success;
 
-					if (!ControlsFile(Path.GetDirectoryName(convertedPath)))
+					if (!Directory.Exists(Path.GetDirectoryName(convertedPath)))
 					{
-						if (PredecessorHasFile(path))
+						if (PredecessorHasFile(Path.GetDirectoryName(path)))
 							Directory.CreateDirectory(Path.GetDirectoryName(convertedPath));
 						else
 							return DokanResult.PathNotFound;
@@ -361,7 +361,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		{
 			string fullPath = ConvertPath(path);
 			if (Directory.Exists(fullPath))
-				return (FileSystemSecurity)Directory.GetAccessControl(fullPath, sections);
+				return Directory.GetAccessControl(fullPath, sections);
 			else if (File.Exists(fullPath))
 				return File.GetAccessControl(fullPath, sections);
 			else
@@ -587,29 +587,9 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 					actualSecurity = Directory.GetAccessControl(ConvertPath(path), sections);
 				else
 					actualSecurity = File.GetAccessControl(ConvertPath(path), sections);
-				
-				if (sections.HasFlag(AccessControlSections.Owner))
-					actualSecurity.SetOwner(security.GetOwner(typeof(System.Security.Principal.SecurityIdentifier)));
-				if (sections.HasFlag(AccessControlSections.Group))
-					actualSecurity.SetGroup(security.GetGroup(typeof(System.Security.Principal.SecurityIdentifier)));
-				if (sections.HasFlag(AccessControlSections.Access))
-				{
-					var oldDacl = actualSecurity.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-					foreach (var rule in oldDacl)
-						actualSecurity.RemoveAccessRule(rule as FileSystemAccessRule);
-					var dacl = security.GetAccessRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-					foreach (var rule in dacl)
-						actualSecurity.AddAccessRule(rule as FileSystemAccessRule);
-				}
-				if (sections.HasFlag(AccessControlSections.Audit))
-				{
-					var oldSacl = actualSecurity.GetAuditRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-					foreach (var rule in oldSacl)
-						actualSecurity.RemoveAuditRule(rule as FileSystemAuditRule);
-					var sacl = security.GetAuditRules(true, true, typeof(System.Security.Principal.SecurityIdentifier));
-					foreach (var rule in sacl)
-						actualSecurity.AddAuditRule(rule as FileSystemAuditRule);
-				}
+
+				var desiredSddlForm = security.GetSecurityDescriptorSddlForm(sections);
+				actualSecurity.SetSecurityDescriptorSddlForm(desiredSddlForm, sections);
 
 				if (info.IsDirectory)
 					Directory.SetAccessControl(ConvertPath(path), actualSecurity as DirectorySecurity);

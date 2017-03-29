@@ -13,10 +13,7 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			using (var fs = new FileStream(args[0], FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite, 4096, FileOptions.SequentialScan))
-			{
-				Console.WriteLine("Created?");
-			}
+			Console.WriteLine(Path.GetDirectoryName(@"\TMP\davefile.txt"));
 		}
 	}
 }
