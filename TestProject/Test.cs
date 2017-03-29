@@ -13,7 +13,10 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine(File.GetAttributes(args[0]).HasFlag(FileAttributes.Directory));
+			using (var fs = new FileStream(args[0], FileMode.CreateNew, FileAccess.ReadWrite, FileShare.ReadWrite, 4096, FileOptions.SequentialScan))
+			{
+				Console.WriteLine("Created?");
+			}
 		}
 	}
 }

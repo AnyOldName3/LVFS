@@ -265,6 +265,13 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 				{
 					var result = DokanResult.Success;
 
+					if (!ControlsFile(Path.GetDirectoryName(convertedPath)))
+					{
+						if (PredecessorHasFile(path))
+							Directory.CreateDirectory(Path.GetDirectoryName(convertedPath));
+						else
+							return DokanResult.PathNotFound;
+					}
 					info.Context[this] = new FileStream(convertedPath, mode, readAccessOnly ? System.IO.FileAccess.Read : System.IO.FileAccess.ReadWrite, share, 4096, options);
 
 					if ((fileExists || directoryExists) && (mode == FileMode.OpenOrCreate || mode == FileMode.Create))
