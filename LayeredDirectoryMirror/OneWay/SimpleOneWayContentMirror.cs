@@ -48,10 +48,87 @@ namespace LayeredDirectoryMirror.OneWay
 			return Path.Combine(DirectoryPath, path);
 		}
 
+		private bool CopyFromPredecessor(string path)
+		{
+			//Content
+			//Security
+			//Information
+			// - attributes
+			// - times
+			// - name
+			// - length
+
+			try
+			{
+				var fileInfo = GetPredecessorFileInformation(path).Value;
+				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				var convertedPath = ConvertPath(path);
+				using (var stream = new FileStream(convertedPath, FileMode.CreateNew, FileSystemRights.FullControl, FileShare.Read, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
+				{
+					var currentOffset = 0L;
+					var end = fileInfo.Length;
+					var buffer = new byte[end < int.MaxValue ? end : int.MaxValue];
+
+					while (currentOffset < end)
+					{
+						int bytesRead;
+						PredecessorReadFile(path, buffer, out bytesRead, currentOffset, null);
+						stream.Write(buffer, 0, bytesRead);
+						currentOffset += bytesRead;
+					}
+				}
+				File.SetAttributes(convertedPath, fileInfo.Attributes);
+				File.SetCreationTime(convertedPath, fileInfo.CreationTime.Value);
+				File.SetLastAccessTime(convertedPath, fileInfo.LastAccessTime.Value);
+				File.SetLastWriteTime(convertedPath, fileInfo.LastWriteTime.Value);
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		private bool IsDirectoryVisible(string path)
+		{
+			return !IsDirectoryShadowed(path) && Directory.Exists(path);
+		}
+
+		private bool IsFileVisible(string path)
+		{
+			return !IsFileShadowed(path) && File.Exists(path);
+		}
+
+		private bool IsDirectoryShadowed(string path)
+		{
+			// TODO
+			return false;
+		}
+
+		private bool IsFileShadowed(string path)
+		{
+			// TODO
+			return false;
+		}
+
+		private void ShadowDirectory(string path)
+		{
+			// TODO
+		}
+
+		private void ShadowFile(string path)
+		{
+			// TODO
+		}
+
 		/// <inheritdoc/>
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
-			throw new NotImplementedException();
+			if (ListFiles(path).Any())
+				return DokanResult.DirectoryNotEmpty;
+			else
+				return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
@@ -138,6 +215,7 @@ namespace LayeredDirectoryMirror.OneWay
 			return Directory.Exists(DirectoryPath);
 		}
 
+		/// <inheritdoc/>
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			throw new NotImplementedException();
