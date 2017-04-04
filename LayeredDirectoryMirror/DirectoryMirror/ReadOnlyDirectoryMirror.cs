@@ -277,6 +277,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		}
 
 		/// <inheritdoc/>
+		public override bool HasDirectory(string path)
+		{
+			return Directory.Exists(ConvertPath(path)) || PredecessorHasDirectory(path);
+		}
+
+		/// <inheritdoc/>
 		public override bool HasFile(string path)
 		{
 			return ControlsFile(path) || PredecessorHasFile(path);
@@ -293,6 +299,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 			}
 			return PredecessorHasFilesInDirectory(path);
 
+		}
+
+		/// <inheritdoc/>
+		public override bool HasRegularFile(string path)
+		{
+			return File.Exists(ConvertPath(path)) || PredecessorHasRegularFile(path);
 		}
 
 		/// <inheritdoc/>

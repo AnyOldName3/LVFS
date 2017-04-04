@@ -100,6 +100,16 @@ namespace LayeredDirectoryMirror.OneWay
 			return !IsFileShadowed(path) && File.Exists(path);
 		}
 
+		private bool IsPredecessorDirectoryVisible(string path)
+		{
+			return !IsDirectoryShadowed(ConvertPath(path)) && PredecessorHasDirectory(path);
+		}
+
+		private bool IsPredecessorFileVisible(string path)
+		{
+			return !IsFileShadowed(ConvertPath(path)) && PredecessorHasRegularFile(path);
+		}
+
 		private bool IsDirectoryShadowed(string path)
 		{
 			// TODO
@@ -125,7 +135,7 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
-			if (ListFiles(path).Any())
+			if (HasFilesInDirectory(path))
 				return DokanResult.DirectoryNotEmpty;
 			else
 				return DokanResult.Success;
@@ -134,7 +144,12 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus CheckFileDeletable(string path)
 		{
-			throw new NotImplementedException();
+			if (HasDirectory(path))
+				return DokanResult.AccessDenied;
+			else if (HasRegularFile(path))
+				return DokanResult.Success;
+			else
+				return DokanResult.FileNotFound;
 		}
 
 		/// <inheritdoc/>
@@ -152,7 +167,8 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool ControlsFile(string path)
 		{
-			throw new NotImplementedException();
+			var convertedPath = ConvertPath(path);
+			return File.Exists(convertedPath) || Directory.Exists(convertedPath) || IsFileShadowed(convertedPath) || IsDirectoryShadowed(convertedPath);
 		}
 
 		/// <inheritdoc/>
@@ -186,15 +202,27 @@ namespace LayeredDirectoryMirror.OneWay
 		}
 
 		/// <inheritdoc/>
+		public override bool HasDirectory(string path)
+		{
+			return IsDirectoryVisible(ConvertPath(path)) || IsPredecessorDirectoryVisible(path);
+		}
+
+		/// <inheritdoc/>
 		public override bool HasFile(string path)
 		{
-			throw new NotImplementedException();
+			return HasDirectory(path) || HasRegularFile(path);
 		}
 
 		/// <inheritdoc/>
 		public override bool HasFilesInDirectory(string path)
 		{
 			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc/>
+		public override bool HasRegularFile(string path)
+		{
+			return IsFileVisible(ConvertPath(path)) || IsPredecessorFileVisible(path);
 		}
 
 		/// <inheritdoc/>

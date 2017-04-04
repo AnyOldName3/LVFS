@@ -50,6 +50,16 @@ namespace LVFS.External
 		}
 
 		/// <summary>
+		/// As with <see cref="HasDirectory(string)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The directory path being queried</param>
+		/// <returns>Whether the predecessor or any of its predecessors has the directory.</returns>
+		protected bool PredecessorHasDirectory(string path)
+		{
+			return mPredecessor?.HasDirectory(path) ?? false;
+		}
+
+		/// <summary>
 		/// As with <see cref="HasFile(string)"/>, but for the predecessor source
 		/// </summary>
 		/// <param name="path">The path being queried</param>
@@ -67,6 +77,16 @@ namespace LVFS.External
 		protected bool PredecessorHasFilesInDirectory(string path)
 		{
 			return mPredecessor?.HasFilesInDirectory(path) ?? false;
+		}
+
+		/// <summary>
+		/// As with <see cref="HasRegularFile(string)"/>, but for the predecessor source.
+		/// </summary>
+		/// <param name="path">The file path being queried</param>
+		/// <returns>Whether the predecessor or any of its predecessors has the file.</returns>
+		protected bool PredecessorHasRegularFile(string path)
+		{
+			return mPredecessor?.HasRegularFile(path) ?? false;
 		}
 
 		/// <summary>
@@ -214,6 +234,20 @@ namespace LVFS.External
 		/// <param name="path">The file path being queried</param>
 		/// <returns>Whether or not this source or a predecessor controls the specified file.</returns>
 		public abstract bool HasFile(string path);
+
+		/// <summary>
+		/// Gets whether or not this source or a predecessor controls the specified regular (i.e. non-directory) file.
+		/// </summary>
+		/// <param name="path">The file path being queried</param>
+		/// <returns>Whether or not this source or a predecessor controls the specified file.</returns>
+		public abstract bool HasRegularFile(string path);
+
+		/// <summary>
+		/// Gets whether or not this source or a predecessor controls the specified directory.
+		/// </summary>
+		/// <param name="path">The directory path being queried</param>
+		/// <returns>Whether or not this source or a predecessor controls the specified directory.</returns>
+		public abstract bool HasDirectory(string path);
 
 		/// <summary>
 		/// Gets whether or not this source or a predecessor exposes a directory which is non-empty.
