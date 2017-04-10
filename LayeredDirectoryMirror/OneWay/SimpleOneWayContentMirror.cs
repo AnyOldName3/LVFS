@@ -198,7 +198,9 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override Tuple<long, long, long> GetSpaceInformation()
 		{
-			throw new NotImplementedException();
+			var driveInfo = DriveInfo.GetDrives().Single(drive => string.Equals(drive.RootDirectory.Name, Path.GetPathRoot(DirectoryPath + "\\"), StringComparison.OrdinalIgnoreCase));
+			
+			return new Tuple<long, long, long>(driveInfo.TotalFreeSpace, driveInfo.TotalSize, driveInfo.AvailableFreeSpace);
 		}
 
 		/// <inheritdoc/>
@@ -216,7 +218,23 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool HasFilesInDirectory(string path)
 		{
-			throw new NotImplementedException();
+			var convertedPath = ConvertPath(path);
+			if (Directory.Exists(convertedPath) && !IsDirectoryShadowed(convertedPath))
+			{
+				var rawFiles = Directory.EnumerateFiles(convertedPath);
+				foreach (var file in rawFiles)
+				{
+					if (!IsFileShadowed(file))
+						return true;
+				}
+				rawFiles = Directory.EnumerateDirectories(convertedPath);
+				foreach (var dir in rawFiles)
+				{
+					if (!IsDirectoryShadowed(dir))
+						return true;
+				}
+			}
+			return PredecessorHasFilesInDirectory(path);
 		}
 
 		/// <inheritdoc/>
