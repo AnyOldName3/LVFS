@@ -186,7 +186,28 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override FileInformation? GetFileInformation(string path)
 		{
-			throw new NotImplementedException();
+			var convertedPath = ConvertPath(path);
+
+			if (IsFileShadowed(convertedPath) || IsDirectoryShadowed(convertedPath))
+				return null;
+
+			FileSystemInfo fileInfo = new FileInfo(convertedPath);
+			if (!fileInfo.Exists)
+			{
+				fileInfo = new DirectoryInfo(convertedPath);
+				if (!fileInfo.Exists)
+					return GetPredecessorFileInformation(path);
+			}
+
+			return new FileInformation
+			{
+				FileName = path,
+				Attributes = fileInfo.Attributes,
+				CreationTime = fileInfo.CreationTime,
+				LastAccessTime = fileInfo.LastAccessTime,
+				LastWriteTime = fileInfo.LastWriteTime,
+				Length = (fileInfo as FileInfo)?.Length ?? 0
+			};
 		}
 
 		/// <inheritdoc/>
