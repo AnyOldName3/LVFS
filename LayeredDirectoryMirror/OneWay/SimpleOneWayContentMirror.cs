@@ -45,7 +45,18 @@ namespace LayeredDirectoryMirror.OneWay
 		private string ConvertPath(string path)
 		{
 			path = path.Substring(1);
-			return Path.Combine(DirectoryPath, path);
+			path = Path.Combine(DirectoryPath, path);
+			return = Path.Combine(Path.GetDirectoryName(path), ConvertFileName(Path.GetFileName(path)));
+		}
+
+		private string ConvertFileName(string filename)
+		{
+			return filename;
+		}
+
+		private string UnconvertFileName(string filename)
+		{
+			return filename;
 		}
 
 		private bool CopyFromPredecessor(string path)
@@ -275,7 +286,51 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override IList<FileInformation> ListFiles(string path)
 		{
-			throw new NotImplementedException();
+			var convertedPath = ConvertPath(path);
+			if (IsDirectoryShadowed(convertedPath))
+				return null;
+
+			IList<FileInformation> predecessorList = ListPredecessorFiles(path);
+
+			HashSet<string> names = new HashSet<string>();
+			IList<FileInformation> resultList;
+			if (Directory.Exists(convertedPath))
+			{
+				IEnumerable<FileInformation> thisCollection = new DirectoryInfo(convertedPath).GetFileSystemInfos().Where((fileInfo) =>
+				{
+					names.Add(UnconvertFileName(fileInfo.Name));
+					if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+						return !IsDirectoryShadowed(fileInfo.FullName);
+					else
+						return !IsFileShadowed(fileInfo.FullName);
+				}).Select((fileInfo) =>
+				{
+					return new FileInformation
+					{
+						FileName = UnconvertFileName(fileInfo.Name),
+						Attributes = fileInfo.Attributes,
+						CreationTime = fileInfo.CreationTime,
+						LastAccessTime = fileInfo.LastAccessTime,
+						LastWriteTime = fileInfo.LastWriteTime,
+						Length = (fileInfo as FileInfo)?.Length ?? 0
+					};
+				});
+				resultList = new List<FileInformation>(thisCollection);
+			}
+			else
+				resultList = new List<FileInformation>();
+
+			foreach (FileInformation fileInfo in predecessorList)
+			{
+				if (!names.Contains(fileInfo.FileName))
+				{
+					var convFilePath = Path.Combine(convertedPath, ConvertFileName(fileInfo.FileName));
+					if ((fileInfo.Attributes.HasFlag(FileAttributes.Directory) && !IsDirectoryShadowed(convFilePath)) || (!fileInfo.Attributes.HasFlag(FileAttributes.Directory) && !IsFileShadowed(convFilePath)))
+						resultList.Add(fileInfo);
+				}
+			}
+
+			return resultList;
 		}
 
 		/// <inheritdoc/>
