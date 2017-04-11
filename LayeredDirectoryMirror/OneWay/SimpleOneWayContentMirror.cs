@@ -213,7 +213,15 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override FileSystemSecurity GetFileSystemSecurity(string path, AccessControlSections sections)
 		{
-			throw new NotImplementedException();
+			var convertedPath = ConvertPath(path);
+			if (IsFileShadowed(convertedPath) || IsDirectoryShadowed(convertedPath))
+				return null;
+			else if (Directory.Exists(convertedPath))
+				return Directory.GetAccessControl(convertedPath, sections);
+			else if (File.Exists(convertedPath))
+				return File.GetAccessControl(convertedPath, sections);
+			else
+				return GetPredecessorFileSystemSecurity(path, sections);
 		}
 
 		/// <inheritdoc/>
