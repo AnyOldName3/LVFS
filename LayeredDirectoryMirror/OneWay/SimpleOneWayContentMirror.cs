@@ -441,7 +441,25 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool TryUnlockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				var context = info.Context[this] as OneWayContext;
+				if (!context.OneWayControls && File.Exists(ConvertPath(path)))
+					TransferFileHandle(path, info);
+				if (context.OneWayControls)
+				{
+					try
+					{
+						(context.Context as FileStream)?.Unlock(startOffset, length);
+						return true;
+					}
+					catch (IOException)
+					{
+						return false;
+					}
+				}
+			}
+			return PredecessorTryUnlockFileRegion(path, startOffset, length, info);
 		}
 
 		/// <inheritdoc/>
