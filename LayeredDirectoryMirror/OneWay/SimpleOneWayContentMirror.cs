@@ -46,7 +46,7 @@ namespace LayeredDirectoryMirror.OneWay
 		{
 			path = path.Substring(1);
 			path = Path.Combine(DirectoryPath, path);
-			return = Path.Combine(Path.GetDirectoryName(path), ConvertFileName(Path.GetFileName(path)));
+			return Path.Combine(Path.GetDirectoryName(path), ConvertFileName(Path.GetFileName(path)));
 		}
 
 		private string ConvertFileName(string filename)
@@ -348,7 +348,32 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				var context = info.Context[this] as OneWayContext;
+				if (context.OneWayControls)
+				{
+					var stream = context.Context as FileStream;
+					lock (stream)
+					{
+						stream.Position = offset;
+						bytesRead = stream.Read(buffer, 0, buffer.Length);
+					}
+					return true;
+				}
+			}
+			var convertedPath = ConvertPath(path);
+			if (File.Exists(convertedPath))
+			{
+				using (var stream = new FileStream(convertedPath, FileMode.Open, System.IO.FileAccess.Read))
+				{
+					stream.Position = offset;
+					bytesRead = stream.Read(buffer, 0, buffer.Length);
+				}
+				return true;
+			}
+
+			return PredecessorReadFile(path, buffer, out bytesRead, offset, info);
 		}
 
 		/// <inheritdoc/>

@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="DirectoryMirror\ReadOnlyDirectoryMirror.cs" />
     <Compile Include="DirectoryMirror\WritableDirectoryMirror.cs" />
+    <Compile Include="OneWay\OneWayContext.cs" />
     <Compile Include="OneWay\SimpleOneWayContentMirror.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
