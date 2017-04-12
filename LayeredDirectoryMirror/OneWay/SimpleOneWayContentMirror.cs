@@ -101,6 +101,12 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 		}
 
+		private void TransferFileHandle(string path, LVFSContextInfo info)
+		{
+			var context = info.Context[this] as OneWayContext;
+			var result = CreateFileHandle(path, context.CreationAccess, context.CreationShare, context.CreationMode, context.CreationOptions, context.CreationAttributes, info);
+		}
+
 		private bool IsDirectoryVisible(string path)
 		{
 			return !IsDirectoryShadowed(path) && Directory.Exists(path);
@@ -348,9 +354,12 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
+			var convertedPath = ConvertPath(path);
 			if (info.Context.ContainsKey(this))
 			{
 				var context = info.Context[this] as OneWayContext;
+				if (!context.OneWayControls && File.Exists(convertedPath))
+					TransferFileHandle(path, info);
 				if (context.OneWayControls)
 				{
 					var stream = context.Context as FileStream;
@@ -362,7 +371,6 @@ namespace LayeredDirectoryMirror.OneWay
 					return true;
 				}
 			}
-			var convertedPath = ConvertPath(path);
 			if (File.Exists(convertedPath))
 			{
 				using (var stream = new FileStream(convertedPath, FileMode.Open, System.IO.FileAccess.Read))
@@ -409,7 +417,25 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool TryLockFileRegion(string path, long startOffset, long length, LVFSContextInfo info)
 		{
-			throw new NotImplementedException();
+			if (info.Context.ContainsKey(this))
+			{
+				var context = info.Context[this] as OneWayContext;
+				if (!context.OneWayControls && File.Exists(ConvertPath(path)))
+					TransferFileHandle(path, info);
+				if (context.OneWayControls)
+				{
+					try
+					{
+						(context.Context as FileStream)?.Lock(startOffset, length);
+						return true;
+					}
+					catch (IOException)
+					{
+						return false;
+					}
+				}
+			}
+			return PredecessorTryLockFileRegion(path, startOffset, length, info);
 		}
 
 		/// <inheritdoc/>
