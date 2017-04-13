@@ -65,8 +65,12 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>copy $(OutputPath)\*  $(SolutionDir)\..\LVFS-Doc.wiki\
+copy $(OutputPath)\media\*  $(SolutionDir)\..\LVFS-Doc.wiki\media\
+cd $(SolutionDir)\..\LVFS-Doc.wiki\
+git add *
+git commit -am "Update documentation"
+git push</PostBuildEvent>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
 </Project>
