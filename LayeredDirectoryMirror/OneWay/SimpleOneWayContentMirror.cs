@@ -522,8 +522,56 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus WriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, info);
+			if (info.Context.ContainsKey(this))
+			{
+				var context = info.Context[this] as OneWayContext;
+				try
+				{
+					var stream = context.Context as FileStream;
+					lock (stream)
+					{
+						stream.Position = offset;
+						stream.Write(buffer, 0, buffer.Length);
+					}
+					bytesWritten = buffer.Length;
+
+					return DokanResult.Success;
+				}
+				catch (UnauthorizedAccessException)
+				{
+					bytesWritten = 0;
+					return DokanResult.AccessDenied;
+				}
+				catch (IOException)
+				{
+					bytesWritten = 0;
+					return DokanResult.DiskFull;
+				}
+			}
+			else
+			{
+				using (var stream = new FileStream(ConvertPath(path), FileMode.Open, System.IO.FileAccess.Write))
+				{
+					try
+					{
+						stream.Position = offset;
+						stream.Write(buffer, 0, buffer.Length);
+						bytesWritten = buffer.Length;
+					}
+					catch (UnauthorizedAccessException)
+					{
+						bytesWritten = 0;
+						return DokanResult.AccessDenied;
+					}
+					catch (IOException)
+					{
+						bytesWritten = 0;
+						return DokanResult.DiskFull;
+					}
+				}
+				return DokanResult.Success;
+			}
 		}
 	}
 }
