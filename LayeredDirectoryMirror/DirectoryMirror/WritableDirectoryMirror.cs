@@ -711,7 +711,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override NtStatus WriteFile(string path, byte[] buffer, out int bytesWritten, long offset, LVFSContextInfo info)
 		{
-			if (info.Context[this] != null)
+			if (info.Context.ContainsKey(this) && info.Context[this] != null)
 			{
 				try
 				{
