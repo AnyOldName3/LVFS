@@ -246,8 +246,23 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus FlushBuffers(string path, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, info);
+
+			if (info.Context.ContainsKey(this))
+			{
+				try
+				{
+					var stream = (info.Context[this] as OneWayContext).Context as FileStream;
+					if (stream != null)
+						stream.Flush();
+				}
+				catch (IOException)
+				{
+					return DokanResult.DiskFull;
+				}
+			}
+
+			return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
