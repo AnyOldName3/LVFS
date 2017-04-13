@@ -76,24 +76,39 @@ namespace LayeredDirectoryMirror.OneWay
 				var fileInfo = GetPredecessorFileInformation(path).Value;
 				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
 				var convertedPath = ConvertPath(path);
-				using (var stream = new FileStream(convertedPath, FileMode.CreateNew, FileSystemRights.FullControl, FileShare.Read, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
+				var directoryPath = Path.GetDirectoryName(path);
+				if (!Directory.Exists(ConvertPath(directoryPath)))
+					CopyFromPredecessor(directoryPath);
+				if (!fileInfo.Attributes.HasFlag(FileAttributes.Directory))
 				{
-					var currentOffset = 0L;
-					var end = fileInfo.Length;
-					var buffer = new byte[end < int.MaxValue ? end : int.MaxValue];
-
-					while (currentOffset < end)
+					
+					using (var stream = new FileStream(convertedPath, FileMode.CreateNew, FileSystemRights.FullControl, FileShare.Read, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
 					{
-						int bytesRead;
-						PredecessorReadFile(path, buffer, out bytesRead, currentOffset, null);
-						stream.Write(buffer, 0, bytesRead);
-						currentOffset += bytesRead;
+						var currentOffset = 0L;
+						var end = fileInfo.Length;
+						var buffer = new byte[end < int.MaxValue ? end : int.MaxValue];
+
+						while (currentOffset < end)
+						{
+							int bytesRead;
+							PredecessorReadFile(path, buffer, out bytesRead, currentOffset, null);
+							stream.Write(buffer, 0, bytesRead);
+							currentOffset += bytesRead;
+						}
 					}
+					File.SetAttributes(convertedPath, fileInfo.Attributes);
+					File.SetCreationTime(convertedPath, fileInfo.CreationTime.Value);
+					File.SetLastAccessTime(convertedPath, fileInfo.LastAccessTime.Value);
+					File.SetLastWriteTime(convertedPath, fileInfo.LastWriteTime.Value);
 				}
-				File.SetAttributes(convertedPath, fileInfo.Attributes);
-				File.SetCreationTime(convertedPath, fileInfo.CreationTime.Value);
-				File.SetLastAccessTime(convertedPath, fileInfo.LastAccessTime.Value);
-				File.SetLastWriteTime(convertedPath, fileInfo.LastWriteTime.Value);
+				else
+				{
+					var dirInfo = Directory.CreateDirectory(convertedPath, fileSecurity as DirectorySecurity);
+					dirInfo.Attributes = fileInfo.Attributes;
+					dirInfo.CreationTime = fileInfo.CreationTime.Value;
+					dirInfo.LastAccessTime = fileInfo.LastAccessTime.Value;
+					dirInfo.LastWriteTime = fileInfo.LastWriteTime.Value;
+				}
 
 				return true;
 			}
@@ -107,6 +122,35 @@ namespace LayeredDirectoryMirror.OneWay
 		{
 			var context = info.Context[this] as OneWayContext;
 			var result = CreateFileHandle(path, context.CreationAccess, context.CreationShare, context.CreationMode, context.CreationOptions, context.CreationAttributes, info);
+			PredecessorCleanupFileHandle(path, info);
+			PredecessorCloseFileHandle(path, info);
+		}
+
+		private void EnsureModifiable(string path, LVFSContextInfo info)
+		{
+			var context = info.Context[this] as OneWayContext;
+			if (context != null)
+			{
+				if (context.OneWayControls)
+					return;
+				else
+				{
+					var convertedPath = ConvertPath(path);
+					if (File.Exists(convertedPath) || Directory.Exists(convertedPath))
+						TransferFileHandle(path, info);
+					else
+					{
+						CopyFromPredecessor(path);
+						TransferFileHandle(path, info);
+					}
+				}
+			}
+			else
+			{
+				var convertedPath = ConvertPath(path);
+				if (!(File.Exists(convertedPath) || Directory.Exists(convertedPath)))
+					CopyFromPredecessor(path);
+			}
 		}
 
 		private bool IsDirectoryVisible(string path)
