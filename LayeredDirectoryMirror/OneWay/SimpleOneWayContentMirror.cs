@@ -195,6 +195,16 @@ namespace LayeredDirectoryMirror.OneWay
 			// TODO
 		}
 
+		private void RemoveDirectoryShadow(string path)
+		{
+			// TODO
+		}
+
+		private void RemoveFileShadow(string path)
+		{
+			// TODO
+		}
+
 		/// <inheritdoc/>
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
@@ -407,8 +417,62 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus MoveFile(string currentPath, string newPath, bool replace, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(currentPath, info);
+
+			var fullCurrentPath = ConvertPath(currentPath);
+			var fullNewPath = ConvertPath(newPath);
+
+			try
+			{
+				object rawContext;
+				info.Context.TryGetValue(this, out rawContext);
+				var context = rawContext as OneWayContext;
+				(context.Context as FileStream).Dispose();
+				context.Context = null;
+
+				if (!HasFile(newPath))
+				{
+					if (info.IsDirectory)
+					{
+						if (IsDirectoryShadowed(fullNewPath))
+							RemoveDirectoryShadow(fullNewPath);
+						Directory.Move(fullCurrentPath, fullNewPath);
+					}
+					else
+					{
+						if (IsFileShadowed(fullNewPath))
+							RemoveFileShadow(fullNewPath);
+						File.Move(fullCurrentPath, fullNewPath);
+					}
+
+					return DokanResult.Success;
+				}
+				else if (replace)
+				{
+					// replace is incompatible with directories
+					if (info.IsDirectory)
+						return DokanResult.AccessDenied;
+
+					if (File.Exists(fullNewPath))
+					{
+						File.Delete(fullNewPath);
+						File.Move(fullCurrentPath, fullNewPath);
+						return DokanResult.Success;
+					}
+					else
+					{
+						// A predecessor source has the file to be replaced, so we can ignore it.
+						File.Move(fullCurrentPath, fullNewPath);
+						return DokanResult.Success;
+					}
+				}
+				else
+					return DokanResult.FileExists;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return DokanResult.AccessDenied;
+			}
 		}
 
 		/// <inheritdoc/>
