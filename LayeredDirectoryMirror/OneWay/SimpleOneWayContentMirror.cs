@@ -518,8 +518,11 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus SetAllocatedSize(string path, long allocationSize, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			// C# offers no ability to allocate space for a file without actually setting its length, so this function cannot be implemented without calling native code. In the mirror example, this is implemented with incorrect semantics. Despite that, many operations require this to claim to work, so we return success whenever this is called.
+			EnsureModifiable(path, info);
+			if (allocationSize < ((info.Context[this] as OneWayContext).Context as FileStream).Length)
+				((info.Context[this] as OneWayContext).Context as FileStream).SetLength(allocationSize);
+			return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
