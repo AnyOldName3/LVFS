@@ -128,7 +128,7 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private void EnsureModifiable(string path, LVFSContextInfo info)
 		{
-			var context = info.Context[this] as OneWayContext;
+			var context = info?.Context[this] as OneWayContext ?? null;
 			if (context != null)
 			{
 				if (context.OneWayControls)
@@ -528,8 +528,24 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus SetFileAttributes(string path, FileAttributes attributes)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, null);
+			try
+			{
+				File.SetAttributes(ConvertPath(path), attributes);
+				return DokanResult.Success;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return DokanResult.AccessDenied;
+			}
+			catch (FileNotFoundException)
+			{
+				return DokanResult.FileNotFound;
+			}
+			catch (DirectoryNotFoundException)
+			{
+				return DokanResult.PathNotFound;
+			}
 		}
 
 		/// <inheritdoc/>
