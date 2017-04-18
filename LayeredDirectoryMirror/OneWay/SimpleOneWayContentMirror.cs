@@ -551,8 +551,22 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus SetFileSecurity(string path, FileSystemSecurity security, AccessControlSections sections, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, info);
+			var convertedPath = ConvertPath(path);
+			FileSystemSecurity actualSecurity;
+			if (info.IsDirectory)
+				actualSecurity = Directory.GetAccessControl(convertedPath, sections);
+			else
+				actualSecurity = File.GetAccessControl(convertedPath, sections);
+
+			var desiredSddlForm = security.GetSecurityDescriptorSddlForm(sections);
+			actualSecurity.SetSecurityDescriptorSddlForm(desiredSddlForm, sections);
+
+			if (info.IsDirectory)
+				Directory.SetAccessControl(convertedPath, actualSecurity as DirectorySecurity);
+			else
+				File.SetAccessControl(convertedPath, actualSecurity as FileSecurity);
+			return DokanResult.Success;
 		}
 
 		/// <inheritdoc/>
