@@ -572,8 +572,27 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus SetFileTimes(string path, DateTime? creationTime, DateTime? lastAccessTime, DateTime? lastWriteTime)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, null);
+			var realPath = ConvertPath(path);
+			try
+			{
+				if (creationTime.HasValue)
+					File.SetCreationTime(realPath, creationTime.Value);
+				if (lastAccessTime.HasValue)
+					File.SetLastAccessTime(realPath, lastAccessTime.Value);
+				if (lastWriteTime.HasValue)
+					File.SetLastWriteTime(realPath, lastWriteTime.Value);
+
+				return DokanResult.Success;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return DokanResult.AccessDenied;
+			}
+			catch (FileNotFoundException)
+			{
+				return DokanResult.FileNotFound;
+			}
 		}
 
 		/// <inheritdoc/>
