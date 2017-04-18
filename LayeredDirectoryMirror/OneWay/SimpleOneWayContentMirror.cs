@@ -598,8 +598,24 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus SetLength(string path, long length, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			EnsureModifiable(path, info);
+			try
+			{
+				var stream = ((info.Context as OneWayContext)?.Context ?? null) as FileStream;
+				if (stream != null)
+					stream.SetLength(length);
+				else
+					new FileStream(ConvertPath(path), FileMode.Open).SetLength(length);
+				return DokanResult.Success;
+			}
+			catch (IOException)
+			{
+				return DokanResult.DiskFull;
+			}
+			catch (UnauthorizedAccessException)
+			{
+				return DokanResult.AccessDenied;
+			}
 		}
 
 		/// <inheritdoc/>
