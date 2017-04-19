@@ -228,15 +228,87 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool CleanupFileHandle(string path, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			try
+			{
+				object context;
+				if (info.Context.TryGetValue(this, out context))
+				{
+					((context as OneWayContext)?.Context as FileStream)?.Dispose();
+					info.Context.Remove(this);
+				}
+
+				if (info.DeleteOnClose)
+				{
+					var convetedPath = ConvertPath(path);
+					if (info.IsDirectory)
+					{
+						if (Directory.Exists(convetedPath))
+							Directory.Delete(convetedPath);
+
+						ShadowDirectory(convetedPath);
+					}
+					else
+					{
+						if (File.Exists(convetedPath))
+							File.Delete(convetedPath);
+						
+						ShadowFile(convetedPath);
+					}
+				}
+			}
+			catch (Exception)
+			{
+				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+
+				info.DeleteOnClose = false;
+				PredecessorCleanupFileHandle(path, info);
+				return false;
+			}
+			info.DeleteOnClose = false;
+			return PredecessorCleanupFileHandle(path, info);
 		}
 
 		/// <inheritdoc/>
 		public override bool CloseFileHandle(string path, LVFSContextInfo info)
 		{
-			// TODO
-			throw new NotImplementedException();
+			try
+			{
+				object context;
+				if (info.Context.TryGetValue(this, out context))
+				{
+					((context as OneWayContext)?.Context as FileStream)?.Dispose();
+					info.Context.Remove(this);
+				}
+
+				if (info.DeleteOnClose)
+				{
+					var convetedPath = ConvertPath(path);
+					if (info.IsDirectory)
+					{
+						if (Directory.Exists(convetedPath))
+							Directory.Delete(convetedPath);
+
+						ShadowDirectory(convetedPath);
+					}
+					else
+					{
+						if (File.Exists(convetedPath))
+							File.Delete(convetedPath);
+
+						ShadowFile(convetedPath);
+					}
+				}
+			}
+			catch (Exception)
+			{
+				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
+
+				info.DeleteOnClose = false;
+				PredecessorCleanupFileHandle(path, info);
+				return false;
+			}
+			info.DeleteOnClose = false;
+			return PredecessorCloseFileHandle(path, info);
 		}
 
 		/// <inheritdoc/>
