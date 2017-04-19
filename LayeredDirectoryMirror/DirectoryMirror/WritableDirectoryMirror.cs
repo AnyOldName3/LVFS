@@ -111,12 +111,12 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 						File.Delete(ConvertPath(path));
 				}
 
-				return PredecessorCleanupFileHandle(path, info);
+				return PredecessorCloseFileHandle(path, info);
 			}
 			catch (Exception)
 			{
 				// Because there're no checked exceptions in C#, I can't tell what might go wrong here and catch specific exceptions.
-				PredecessorCleanupFileHandle(path, info);
+				PredecessorCloseFileHandle(path, info);
 				return false;
 			}
 		}
