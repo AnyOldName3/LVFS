@@ -21,5 +21,15 @@ namespace LayeredDirectoryMirror.OneWay
 		#endregion HandleCreationParameters
 
 		public object Context { get; set; }
+
+		public OneWayContext(string creationPath, DokanNet.FileAccess creationAccess, FileShare creationShare, FileMode creationMode, FileOptions creationOptions, FileAttributes creationAttributes)
+		{
+			CreationPath = creationPath;
+			CreationAccess = creationAccess;
+			CreationShare = creationShare;
+			CreationMode = creationMode;
+			CreationOptions = creationOptions;
+			CreationAttributes = creationAttributes;
+		}
 	}
 }

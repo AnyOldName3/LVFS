@@ -75,13 +75,26 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				var fileInfo = GetPredecessorFileInformation(path).Value;
 				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
-				var convertedPath = ConvertPath(path);
 				var directoryPath = Path.GetDirectoryName(path);
-				if (!Directory.Exists(ConvertPath(directoryPath)))
+				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
 					CopyFromPredecessor(directoryPath);
+
+				var convertedPath = ConvertPath(path);
+				// Exit early if the file already exists
+				if (IsFileVisible(convertedPath))
+					return !fileInfo.Attributes.HasFlag(FileAttributes.Directory);
+				else if (IsDirectoryVisible(convertedPath))
+					return fileInfo.Attributes.HasFlag(FileAttributes.Directory);
+
+				if (IsFileShadowed(convertedPath))
+				{
+					RemoveFileShadow(convertedPath);
+					if (File.Exists(convertedPath))
+						File.Delete(convertedPath);
+				}
+
 				if (!fileInfo.Attributes.HasFlag(FileAttributes.Directory))
 				{
-					
 					using (var stream = new FileStream(convertedPath, FileMode.CreateNew, FileSystemRights.FullControl, FileShare.Read, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
 					{
 						var currentOffset = 0L;
@@ -103,7 +116,14 @@ namespace LayeredDirectoryMirror.OneWay
 				}
 				else
 				{
-					var dirInfo = Directory.CreateDirectory(convertedPath, fileSecurity as DirectorySecurity);
+					if (IsDirectoryShadowed(convertedPath))
+						RemoveDirectoryShadow(convertedPath);
+
+					DirectoryInfo dirInfo;
+					if (Directory.Exists(convertedPath))
+						dirInfo = new DirectoryInfo(convertedPath);
+					else
+						dirInfo = Directory.CreateDirectory(convertedPath, fileSecurity as DirectorySecurity);
 					dirInfo.Attributes = fileInfo.Attributes;
 					dirInfo.CreationTime = fileInfo.CreationTime.Value;
 					dirInfo.LastAccessTime = fileInfo.LastAccessTime.Value;
@@ -151,6 +171,25 @@ namespace LayeredDirectoryMirror.OneWay
 				if (!(File.Exists(convertedPath) || Directory.Exists(convertedPath)))
 					CopyFromPredecessor(path);
 			}
+		}
+
+		private bool EnsureDirectoryIsVisible(string path)
+		{
+			var parentPath = Path.GetDirectoryName(path);
+			if (!EnsureDirectoryIsVisible(parentPath))
+				return false;
+
+			// There's something in the way
+			if (File.Exists(path) && !IsFileShadowed(path))
+				return false;
+
+			// It's already there
+			if (Directory.Exists(path) && !IsDirectoryShadowed(path))
+				return true;
+
+
+
+			return false;
 		}
 
 		private bool IsDirectoryVisible(string path)
@@ -321,6 +360,63 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override NtStatus CreateFileHandle(string path, DokanNet.FileAccess access, FileShare share, FileMode mode, FileOptions options, FileAttributes attributes, LVFSContextInfo info)
 		{
+			var context = new OneWayContext(path, access, share, mode, options, attributes);
+			info.Context[this] = context;
+
+			var convertedPath = ConvertPath(path);
+			var directoryExists = Directory.Exists(convertedPath);
+			var fileExists = File.Exists(convertedPath);
+			var directoryShadowed = IsDirectoryShadowed(convertedPath);
+			var fileShadowed = IsFileShadowed(convertedPath);
+
+			var controlsFile = File.Exists(convertedPath) || Directory.Exists(convertedPath) || IsFileShadowed(convertedPath) || IsDirectoryShadowed(convertedPath);
+			context.OneWayControls = controlsFile;
+
+			if (!controlsFile && (mode == FileMode.Open || mode == FileMode.OpenOrCreate) && PredecessorHasFile(path))
+				return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+
+			if (info.IsDirectory)
+			{
+				try
+				{
+					switch (mode)
+					{
+						case FileMode.Open:
+							{
+								if (directoryExists)
+								{
+									if (!directoryShadowed)
+										return DokanResult.Success;
+								}
+								else if (fileExists)
+								{
+									if (!fileShadowed)
+										return NtStatus.NotADirectory;
+								}
+
+								if (fileShadowed || directoryShadowed)
+									return DokanResult.FileNotFound;
+								else
+									return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							}
+						case FileMode.CreateNew:
+							{
+								if (directoryExists || PredecessorHasDirectory(path))
+								{
+									if (!directoryShadowed)
+										return DokanResult.AlreadyExists;
+								}
+								else if (fileExists || PredecessorHasRegularFile(path))
+								{
+									if (!fileShadowed)
+										return DokanResult.FileExists;
+								}
+
+
+							}
+					}
+				}
+			}
 			// TODO
 			throw new NotImplementedException();
 		}
