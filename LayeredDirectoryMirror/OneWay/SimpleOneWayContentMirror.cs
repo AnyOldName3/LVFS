@@ -412,10 +412,51 @@ namespace LayeredDirectoryMirror.OneWay
 										return DokanResult.FileExists;
 								}
 
+								if (directoryShadowed)
+									RemoveDirectoryShadow(convertedPath);
 
+								if (!Directory.Exists(convertedPath))
+									Directory.CreateDirectory(convertedPath);
+
+								return DokanResult.Success;
+							}
+						case FileMode.OpenOrCreate:
+							{
+								if (!directoryShadowed)
+								{
+									if (directoryExists)
+										return DokanResult.Success;
+									else if (PredecessorHasDirectory(path))
+										return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+									else
+										RemoveDirectoryShadow(convertedPath);
+								}
+								else if (fileExists || PredecessorHasRegularFile(path))
+								{
+									if (!fileShadowed)
+										return NtStatus.NotADirectory;
+								}
+
+								if (!Directory.Exists(convertedPath))
+									Directory.CreateDirectory(convertedPath);
+
+								return DokanResult.Success;
+							}
+						default:
+							{
+								// I don't think any other file modes can actually used with directories, so we should be free to die in any arbitrary way here. In fact, I don't think OpenOrCreate can actually be used with directories either, but the associated behaviour was simple enough, so I implemented it anyway.
+								return DokanResult.NotImplemented;
 							}
 					}
 				}
+				catch (UnauthorizedAccessException)
+				{
+					return DokanResult.AccessDenied;
+				}
+			}
+			else
+			{
+
 			}
 			// TODO
 			throw new NotImplementedException();
