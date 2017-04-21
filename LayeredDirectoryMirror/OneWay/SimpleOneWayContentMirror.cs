@@ -386,7 +386,10 @@ namespace LayeredDirectoryMirror.OneWay
 								if (directoryExists)
 								{
 									if (!directoryShadowed)
+									{
+										context.OneWayControls = true;
 										return DokanResult.Success;
+									}
 								}
 								else if (fileExists)
 								{
@@ -418,6 +421,7 @@ namespace LayeredDirectoryMirror.OneWay
 								if (!Directory.Exists(convertedPath))
 									Directory.CreateDirectory(convertedPath);
 
+								context.OneWayControls = true;
 								return DokanResult.Success;
 							}
 						case FileMode.OpenOrCreate:
@@ -425,7 +429,10 @@ namespace LayeredDirectoryMirror.OneWay
 								if (!directoryShadowed)
 								{
 									if (directoryExists)
+									{
+										context.OneWayControls = true;
 										return DokanResult.Success;
+									}
 									else if (PredecessorHasDirectory(path))
 										return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 									else
@@ -440,6 +447,7 @@ namespace LayeredDirectoryMirror.OneWay
 								if (!Directory.Exists(convertedPath))
 									Directory.CreateDirectory(convertedPath);
 
+								context.OneWayControls = true;
 								return DokanResult.Success;
 							}
 						default:
@@ -456,7 +464,49 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 			else
 			{
+				switch (mode)
+				{
+					case FileMode.Open:
+						{
+							if (fileShadowed && directoryShadowed)
+								return DokanResult.FileNotFound;
 
+							if (directoryShadowed)
+							{
+								if (!fileExists)
+									PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							}
+							else if (fileShadowed)
+							{
+								if (!directoryExists)
+									PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+							}
+
+							if (fileExists || directoryExists)
+							{
+								var dataAccess = DokanNet.FileAccess.ReadData | DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Execute | DokanNet.FileAccess.GenericExecute | DokanNet.FileAccess.GenericWrite | DokanNet.FileAccess.GenericRead;
+								var readWriteOnlyAttributes = (access & dataAccess) == 0;
+
+								if (directoryExists || readWriteOnlyAttributes)
+								{
+									if (directoryExists && access.HasFlag(DokanNet.FileAccess.Delete) && !access.HasFlag(DokanNet.FileAccess.Synchronize))
+										// Delete request on (potentially) non-empty directory
+										return DokanResult.AccessDenied;
+
+									info.IsDirectory = directoryExists;
+
+									context.OneWayControls = true;
+									return DokanResult.Success;
+								}
+								else
+									// Go to the regular handler
+									break;
+							}
+							else
+								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+						}
+					
+				}
 			}
 			// TODO
 			throw new NotImplementedException();

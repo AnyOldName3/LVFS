@@ -30,6 +30,8 @@ namespace LayeredDirectoryMirror.OneWay
 			CreationMode = creationMode;
 			CreationOptions = creationOptions;
 			CreationAttributes = creationAttributes;
+
+			OneWayControls = false;
 		}
 	}
 }
