@@ -572,6 +572,40 @@ namespace LayeredDirectoryMirror.OneWay
 								break;
 							}
 						}
+					case FileMode.OpenOrCreate:
+						{
+							if (directoryExists)
+							{
+								if (directoryShadowed)
+								{
+									if (!fileShadowed && PredecessorHasRegularFile(path))
+										return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+
+									SafeDirectoryDelete(convertedPath);
+								}
+
+								break;
+							}
+							else if (fileExists)
+							{
+								if (fileShadowed)
+								{
+									if (!directoryShadowed && PredecessorHasDirectory(path))
+										return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+
+									File.Delete(convertedPath);
+								}
+
+								break;
+							}
+							else
+							{
+								if ((!directoryShadowed && PredecessorHasDirectory(path)) || (!fileShadowed && PredecessorHasRegularFile(path)))
+									return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
+								else
+									break;
+							}
+						}
 			}
 			// TODO
 			throw new NotImplementedException();
