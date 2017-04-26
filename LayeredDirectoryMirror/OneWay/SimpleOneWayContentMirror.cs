@@ -244,6 +244,14 @@ namespace LayeredDirectoryMirror.OneWay
 			// TODO
 		}
 
+		private void SafeDirectoryDelete(string path)
+		{
+			if (Directory.Exists(path) && !Directory.EnumerateFileSystemEntries(path).Any())
+				Directory.Delete(path);
+
+			ShadowDirectory(path);
+		}
+
 		/// <inheritdoc/>
 		public override NtStatus CheckDirectoryDeletable(string path)
 		{
@@ -281,10 +289,7 @@ namespace LayeredDirectoryMirror.OneWay
 					var convetedPath = ConvertPath(path);
 					if (info.IsDirectory)
 					{
-						if (Directory.Exists(convetedPath))
-							Directory.Delete(convetedPath);
-
-						ShadowDirectory(convetedPath);
+						SafeDirectoryDelete(convetedPath);
 					}
 					else
 					{
@@ -324,10 +329,7 @@ namespace LayeredDirectoryMirror.OneWay
 					var convetedPath = ConvertPath(path);
 					if (info.IsDirectory)
 					{
-						if (Directory.Exists(convetedPath))
-							Directory.Delete(convetedPath);
-
-						ShadowDirectory(convetedPath);
+						SafeDirectoryDelete(convetedPath);
 					}
 					else
 					{
@@ -363,6 +365,9 @@ namespace LayeredDirectoryMirror.OneWay
 			var context = new OneWayContext(path, access, share, mode, options, attributes);
 			info.Context[this] = context;
 
+			var copiedFromPredecessor = false;
+			var directoryShadowRemoved = false;
+			var fileShadowRemoved = false;
 			var convertedPath = ConvertPath(path);
 			var directoryExists = Directory.Exists(convertedPath);
 			var fileExists = File.Exists(convertedPath);
@@ -416,7 +421,10 @@ namespace LayeredDirectoryMirror.OneWay
 								}
 
 								if (directoryShadowed)
+								{
 									RemoveDirectoryShadow(convertedPath);
+									directoryShadowRemoved = true;
+								}
 
 								if (!Directory.Exists(convertedPath))
 									Directory.CreateDirectory(convertedPath);
@@ -436,7 +444,10 @@ namespace LayeredDirectoryMirror.OneWay
 									else if (PredecessorHasDirectory(path))
 										return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 									else
+									{
 										RemoveDirectoryShadow(convertedPath);
+										directoryShadowRemoved = true;
+									}
 								}
 								else if (fileExists || PredecessorHasRegularFile(path))
 								{
@@ -459,6 +470,18 @@ namespace LayeredDirectoryMirror.OneWay
 				}
 				catch (UnauthorizedAccessException)
 				{
+					if (directoryShadowRemoved)
+						ShadowDirectory(convertedPath);
+					if (fileShadowRemoved)
+						ShadowFile(convertedPath);
+					if (copiedFromPredecessor)
+					{
+						if (File.Exists(convertedPath))
+							File.Delete(convertedPath);
+						else
+							SafeDirectoryDelete(convertedPath);
+					}
+
 					return DokanResult.AccessDenied;
 				}
 			}
@@ -505,8 +528,50 @@ namespace LayeredDirectoryMirror.OneWay
 							else
 								return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 						}
-					
-				}
+					case FileMode.CreateNew:
+						{
+							if (directoryExists)
+							{
+								if (!directoryShadowed)
+									return DokanResult.AlreadyExists;
+								else if (!fileShadowed)
+								{
+									if (PredecessorHasRegularFile(path))
+										return DokanResult.AlreadyExists;
+								}
+								SafeDirectoryDelete(convertedPath);
+								break;
+							}
+							else if (fileExists)
+							{
+								if (fileShadowed)
+								{
+									if (!directoryShadowed && PredecessorHasDirectory(path))
+										return DokanResult.AlreadyExists;
+
+									File.Delete(convertedPath);
+									RemoveFileShadow(convertedPath);
+									fileShadowRemoved = true;
+
+									break;
+								}
+								else
+									return DokanResult.AlreadyExists;
+							}
+							else
+							{
+								if ((!fileShadowed && PredecessorHasRegularFile(path)) || (!directoryShadowed && PredecessorHasDirectory(path)))
+									return DokanResult.AlreadyExists;
+
+								if (fileShadowed)
+								{
+									RemoveFileShadow(convertedPath);
+									fileShadowRemoved = true;
+								}
+
+								break;
+							}
+						}
 			}
 			// TODO
 			throw new NotImplementedException();
