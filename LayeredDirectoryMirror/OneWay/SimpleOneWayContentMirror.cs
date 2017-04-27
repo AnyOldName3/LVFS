@@ -95,7 +95,7 @@ namespace LayeredDirectoryMirror.OneWay
 
 				if (!fileInfo.Attributes.HasFlag(FileAttributes.Directory))
 				{
-					using (var stream = new FileStream(convertedPath, FileMode.CreateNew, FileSystemRights.FullControl, FileShare.Read, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
+					using (var stream = File.Create(convertedPath, 4096, FileOptions.SequentialScan, fileSecurity as FileSecurity))
 					{
 						var currentOffset = 0L;
 						var end = fileInfo.Length;
@@ -108,6 +108,72 @@ namespace LayeredDirectoryMirror.OneWay
 							stream.Write(buffer, 0, bytesRead);
 							currentOffset += bytesRead;
 						}
+					}
+					File.SetAttributes(convertedPath, fileInfo.Attributes);
+					File.SetCreationTime(convertedPath, fileInfo.CreationTime.Value);
+					File.SetLastAccessTime(convertedPath, fileInfo.LastAccessTime.Value);
+					File.SetLastWriteTime(convertedPath, fileInfo.LastWriteTime.Value);
+				}
+				else
+				{
+					if (IsDirectoryShadowed(convertedPath))
+						RemoveDirectoryShadow(convertedPath);
+
+					DirectoryInfo dirInfo;
+					if (Directory.Exists(convertedPath))
+						dirInfo = new DirectoryInfo(convertedPath);
+					else
+						dirInfo = Directory.CreateDirectory(convertedPath, fileSecurity as DirectorySecurity);
+					dirInfo.Attributes = fileInfo.Attributes;
+					dirInfo.CreationTime = fileInfo.CreationTime.Value;
+					dirInfo.LastAccessTime = fileInfo.LastAccessTime.Value;
+					dirInfo.LastWriteTime = fileInfo.LastWriteTime.Value;
+				}
+
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
+
+		private bool CopyFromPredecessorExcludingContent(string path)
+		{
+			//Security
+			//Information
+			// - attributes
+			// - times
+			// - name
+			// - length
+
+			try
+			{
+				var fileInfo = GetPredecessorFileInformation(path).Value;
+				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				var directoryPath = Path.GetDirectoryName(path);
+				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
+					CopyFromPredecessorExcludingContent(directoryPath);
+
+				var convertedPath = ConvertPath(path);
+				// Exit early if the file already exists
+				if (IsFileVisible(convertedPath))
+					return !fileInfo.Attributes.HasFlag(FileAttributes.Directory);
+				else if (IsDirectoryVisible(convertedPath))
+					return fileInfo.Attributes.HasFlag(FileAttributes.Directory);
+
+				if (IsFileShadowed(convertedPath))
+				{
+					RemoveFileShadow(convertedPath);
+					if (File.Exists(convertedPath))
+						File.Delete(convertedPath);
+				}
+
+				if (!fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+				{
+					using (var stream = File.Create(convertedPath, 0, FileOptions.None, fileSecurity as FileSecurity))
+					{
+						// Do nothing. The file now exists.
 					}
 					File.SetAttributes(convertedPath, fileInfo.Attributes);
 					File.SetCreationTime(convertedPath, fileInfo.CreationTime.Value);
@@ -604,6 +670,49 @@ namespace LayeredDirectoryMirror.OneWay
 									return PredecessorCreateFileHandle(path, access, share, mode, options, attributes, info);
 								else
 									break;
+							}
+						}
+					case FileMode.Truncate:
+						{
+							if (directoryExists)
+							{
+								if (directoryShadowed)
+								{
+									if (!fileShadowed && PredecessorHasRegularFile(path))
+									{
+										copiedFromPredecessor |= CopyFromPredecessorExcludingContent(path);
+										break;
+									}
+
+									return DokanResult.FileNotFound;
+								}
+								else
+									break;
+							}
+							else if (fileExists)
+							{
+								if (fileShadowed)
+								{
+									if (!directoryShadowed && PredecessorHasDirectory(path))
+									{
+										copiedFromPredecessor |= CopyFromPredecessorExcludingContent(path);
+										break;
+									}
+
+									return DokanResult.FileNotFound;
+								}
+								else
+									break;
+							}
+							else
+							{
+								if ((!directoryShadowed && PredecessorHasDirectory(path)) || (!fileShadowed && PredecessorHasRegularFile(path)))
+								{
+									copiedFromPredecessor |= CopyFromPredecessorExcludingContent(path);
+									break;
+								}
+
+								return DokanResult.FileNotFound;
 							}
 						}
 			}
