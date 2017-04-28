@@ -267,7 +267,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 
 					if (!Directory.Exists(Path.GetDirectoryName(convertedPath)))
 					{
-						if (PredecessorHasFile(Path.GetDirectoryName(path)))
+						if (PredecessorHasDirectory(Path.GetDirectoryName(path)))
 							Directory.CreateDirectory(Path.GetDirectoryName(convertedPath));
 						else
 							return DokanResult.PathNotFound;
