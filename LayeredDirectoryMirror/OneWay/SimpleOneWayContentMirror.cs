@@ -239,24 +239,34 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 		}
 
+		/*
 		private bool EnsureDirectoryIsVisible(string path)
 		{
 			var parentPath = Path.GetDirectoryName(path);
 			if (!EnsureDirectoryIsVisible(parentPath))
 				return false;
 
+			var convertedPath = ConvertPath(path);
 			// There's something in the way
-			if (File.Exists(path) && !IsFileShadowed(path))
+			if (!IsFileShadowed(convertedPath) && (File.Exists(convertedPath) || PredecessorHasFile(path)))
 				return false;
 
-			// It's already there
-			if (Directory.Exists(path) && !IsDirectoryShadowed(path))
-				return true;
+			if (!IsDirectoryShadowed(path))
+			{
+				if (Directory.Exists(path))
+					// It's already there
+					return true;
+				else if (PredecessorHasDirectory(path))
+				{
+					// We 
+				}
+			}
 
 
 
 			return false;
 		}
+		*/
 
 		private bool IsDirectoryVisible(string path)
 		{
@@ -796,6 +806,52 @@ namespace LayeredDirectoryMirror.OneWay
 						// This code should never be reached
 						throw new ArgumentException("Unknown file mode: " + mode, nameof(mode));
 				}
+
+				var dataWriteAccess = DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Delete | DokanNet.FileAccess.GenericWrite;
+				var readAccessOnly = (access & dataWriteAccess) == 0;
+
+				var parentDirectory = Path.GetDirectoryName(convertedPath);
+				if (IsDirectoryShadowed(parentDirectory))
+				{
+					if (directoryShadowRemoved)
+						ShadowDirectory(convertedPath);
+					if (fileShadowRemoved)
+						ShadowFile(convertedPath);
+					if (copiedFromPredecessor)
+					{
+						if (File.Exists(convertedPath))
+							File.Delete(convertedPath);
+						else
+							SafeDirectoryDelete(convertedPath);
+					}
+
+					return DokanResult.PathNotFound;
+				}
+				else
+				{
+					if (!Directory.Exists(parentDirectory))
+					{
+						if (PredecessorHasDirectory(Path.GetDirectoryName(path)))
+							CopyFromPredecessor(Path.GetDirectoryName(path));
+						else
+						{
+							if (directoryShadowRemoved)
+								ShadowDirectory(convertedPath);
+							if (fileShadowRemoved)
+								ShadowFile(convertedPath);
+							if (copiedFromPredecessor)
+							{
+								if (File.Exists(convertedPath))
+									File.Delete(convertedPath);
+								else
+									SafeDirectoryDelete(convertedPath);
+							}
+
+							return DokanResult.PathNotFound;
+						}
+					}
+				}
+
 				// TODO
 			}
 		}
