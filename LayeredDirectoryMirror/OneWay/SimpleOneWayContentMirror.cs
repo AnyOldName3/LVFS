@@ -855,8 +855,23 @@ namespace LayeredDirectoryMirror.OneWay
 							}
 						}
 					}
+					
+					context.Context = new FileStream(convertedPath, mode, readAccessOnly ? System.IO.FileAccess.Read : System.IO.FileAccess.ReadWrite, share, 4096, options);
 
-					// TODO
+					if ((fileExists || directoryExists) && (mode == FileMode.OpenOrCreate || mode == FileMode.Create))
+						result = DokanResult.AlreadyExists;
+
+					if (mode == FileMode.CreateNew || mode == FileMode.Create)
+						attributes |= FileAttributes.Archive;
+
+					File.SetAttributes(convertedPath, attributes);
+
+					if (File.Exists(convertedPath) && IsFileShadowed(convertedPath))
+						RemoveFileShadow(convertedPath);
+					else if (Directory.Exists(convertedPath) && IsDirectoryShadowed(convertedPath))
+						RemoveDirectoryShadow(convertedPath);
+
+					return result;
 				}
 				catch (UnauthorizedAccessException)
 				{
