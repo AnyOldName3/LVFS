@@ -749,6 +749,50 @@ namespace LayeredDirectoryMirror.OneWay
 								break;
 							}
 						}
+					case FileMode.Append:
+						{
+							if (directoryExists)
+							{
+								if (directoryShadowed)
+								{
+									if (!fileShadowed && PredecessorHasRegularFile(path))
+									{
+										copiedFromPredecessor |= CopyFromPredecessor(path);
+										break;
+									}
+									else
+										return DokanResult.FileNotFound;
+								}
+								else
+									break;
+							}
+							else if (fileExists)
+							{
+								if (fileShadowed)
+								{
+									if (!directoryShadowed && PredecessorHasDirectory(path))
+									{
+										copiedFromPredecessor |= CopyFromPredecessor(path);
+										break;
+									}
+									else
+										return DokanResult.FileNotFound;
+								}
+								else
+									break;
+							}
+							else
+							{
+								if ((!directoryShadowed && PredecessorHasDirectory(path)) || (!fileShadowed && PredecessorHasRegularFile(path)))
+								{
+									copiedFromPredecessor |= CopyFromPredecessor(path);
+									break;
+								}
+								else
+									return DokanResult.FileNotFound;
+							}
+						}
+				}
 			}
 			// TODO
 			throw new NotImplementedException();
