@@ -810,8 +810,71 @@ namespace LayeredDirectoryMirror.OneWay
 				var dataWriteAccess = DokanNet.FileAccess.WriteData | DokanNet.FileAccess.AppendData | DokanNet.FileAccess.Delete | DokanNet.FileAccess.GenericWrite;
 				var readAccessOnly = (access & dataWriteAccess) == 0;
 
-				var parentDirectory = Path.GetDirectoryName(convertedPath);
-				if (IsDirectoryShadowed(parentDirectory))
+				try
+				{
+					var result = DokanResult.Success;
+
+					var parentDirectory = Path.GetDirectoryName(convertedPath);
+					if (IsDirectoryShadowed(parentDirectory))
+					{
+						if (directoryShadowRemoved)
+							ShadowDirectory(convertedPath);
+						if (fileShadowRemoved)
+							ShadowFile(convertedPath);
+						if (copiedFromPredecessor)
+						{
+							if (File.Exists(convertedPath))
+								File.Delete(convertedPath);
+							else
+								SafeDirectoryDelete(convertedPath);
+						}
+
+						return DokanResult.PathNotFound;
+					}
+					else
+					{
+						if (!Directory.Exists(parentDirectory))
+						{
+							if (PredecessorHasDirectory(Path.GetDirectoryName(path)))
+								CopyFromPredecessor(Path.GetDirectoryName(path));
+							else
+							{
+								if (directoryShadowRemoved)
+									ShadowDirectory(convertedPath);
+								if (fileShadowRemoved)
+									ShadowFile(convertedPath);
+								if (copiedFromPredecessor)
+								{
+									if (File.Exists(convertedPath))
+										File.Delete(convertedPath);
+									else
+										SafeDirectoryDelete(convertedPath);
+								}
+
+								return DokanResult.PathNotFound;
+							}
+						}
+					}
+
+					// TODO
+				}
+				catch (UnauthorizedAccessException)
+				{
+					if (directoryShadowRemoved)
+						ShadowDirectory(convertedPath);
+					if (fileShadowRemoved)
+						ShadowFile(convertedPath);
+					if (copiedFromPredecessor)
+					{
+						if (File.Exists(convertedPath))
+							File.Delete(convertedPath);
+						else
+							SafeDirectoryDelete(convertedPath);
+					}
+
+					return DokanResult.AccessDenied;
+				}
+				catch (DirectoryNotFoundException)
 				{
 					if (directoryShadowRemoved)
 						ShadowDirectory(convertedPath);
@@ -827,32 +890,45 @@ namespace LayeredDirectoryMirror.OneWay
 
 					return DokanResult.PathNotFound;
 				}
-				else
+				catch (Exception ex)
 				{
-					if (!Directory.Exists(parentDirectory))
+					var hr = (uint)System.Runtime.InteropServices.Marshal.GetHRForException(ex);
+					switch (hr)
 					{
-						if (PredecessorHasDirectory(Path.GetDirectoryName(path)))
-							CopyFromPredecessor(Path.GetDirectoryName(path));
-						else
-						{
-							if (directoryShadowRemoved)
-								ShadowDirectory(convertedPath);
-							if (fileShadowRemoved)
-								ShadowFile(convertedPath);
-							if (copiedFromPredecessor)
+						case 0x80070020: //Sharing violation
 							{
-								if (File.Exists(convertedPath))
-									File.Delete(convertedPath);
-								else
-									SafeDirectoryDelete(convertedPath);
-							}
+								if (directoryShadowRemoved)
+									ShadowDirectory(convertedPath);
+								if (fileShadowRemoved)
+									ShadowFile(convertedPath);
+								if (copiedFromPredecessor)
+								{
+									if (File.Exists(convertedPath))
+										File.Delete(convertedPath);
+									else
+										SafeDirectoryDelete(convertedPath);
+								}
 
-							return DokanResult.PathNotFound;
-						}
+								return DokanResult.SharingViolation;
+							}
+						default:
+							{
+								if (directoryShadowRemoved)
+									ShadowDirectory(convertedPath);
+								if (fileShadowRemoved)
+									ShadowFile(convertedPath);
+								if (copiedFromPredecessor)
+								{
+									if (File.Exists(convertedPath))
+										File.Delete(convertedPath);
+									else
+										SafeDirectoryDelete(convertedPath);
+								}
+
+								throw;
+							}
 					}
 				}
-
-				// TODO
 			}
 		}
 
