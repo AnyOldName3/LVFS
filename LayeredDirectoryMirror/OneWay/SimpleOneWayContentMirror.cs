@@ -792,10 +792,12 @@ namespace LayeredDirectoryMirror.OneWay
 									return DokanResult.FileNotFound;
 							}
 						}
+					default:
+						// This code should never be reached
+						throw new ArgumentException("Unknown file mode: " + mode, nameof(mode));
 				}
+				// TODO
 			}
-			// TODO
-			throw new NotImplementedException();
 		}
 
 		/// <inheritdoc/>
