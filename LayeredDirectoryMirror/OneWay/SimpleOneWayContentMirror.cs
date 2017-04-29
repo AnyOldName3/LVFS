@@ -51,13 +51,19 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private string ConvertFileName(string filename)
 		{
-			// TODO
+			if (filename.StartsWith(".LVFS.shadow."))
+				filename = ".LVFS.escape" + filename;
+			else if (filename.StartsWith(".LVFS.escape."))
+				filename = ".LVFS.escape" + filename;
 			return filename;
 		}
 
 		private string UnconvertFileName(string filename)
 		{
-			// TODO
+			if (filename.StartsWith(".LVFS.escape.LVFS.shadow."))
+				filename = filename.Substring(".LVFS.escape".Length);
+			else if (filename.StartsWith(".LVFS.escape.LVFS.escape."))
+				filename = filename.Substring(".LVFS.escape".Length);
 			return filename;
 		}
 
