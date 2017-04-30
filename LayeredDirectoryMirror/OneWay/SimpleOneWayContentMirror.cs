@@ -45,6 +45,7 @@ namespace LayeredDirectoryMirror.OneWay
 		private string ConvertPath(string path)
 		{
 			path = path.Substring(1);
+			// TODO
 			path = Path.Combine(DirectoryPath, path);
 			return Path.Combine(Path.GetDirectoryName(path), ConvertFileName(Path.GetFileName(path)));
 		}
@@ -306,14 +307,39 @@ namespace LayeredDirectoryMirror.OneWay
 			return false;
 		}
 
+		private void MoveShadows(string source, string destination)
+		{
+			var shadows = Directory.EnumerateFiles(source, ".LVFS.shadow.*");
+			foreach (var shadow in shadows)
+			{
+				var name = Path.GetFileName(shadow);
+				File.Move(shadow, Path.Combine(destination, name));
+			}
+			shadows = Directory.EnumerateDirectories(source, ".LVFS.shadow.*");
+			foreach (var shadow in shadows)
+			{
+				var destShadow = Path.Combine(destination, Path.GetFileName(shadow));
+				if (!Directory.Exists(destShadow))
+					Directory.CreateDirectory(destShadow);
+				MoveShadows(shadow, destShadow);
+			}
+		}
+
 		private void ShadowDirectory(string path)
 		{
-			// TODO
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			Directory.CreateDirectory(shadowPath);
+			if (Directory.Exists(path))
+			{
+				MoveShadows(path, shadowPath);
+			}
 		}
 
 		private void ShadowFile(string path)
 		{
-			// TODO
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			using (var state = File.Create(shadowPath))
+			{ }
 		}
 
 		private void RemoveDirectoryShadow(string path)
