@@ -13,7 +13,7 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			Microsoft.VisualBasic.FileIO.FileSystem.MoveDirectory(args[0], args[1], false /* Overwrite */);
+			Console.WriteLine(Path.Combine("", @"some\random\path\dave.txt"));
 		}
 	}
 }

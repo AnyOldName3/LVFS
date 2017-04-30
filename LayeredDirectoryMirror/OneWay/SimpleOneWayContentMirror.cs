@@ -44,13 +44,19 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private string ConvertPath(string path)
 		{
-			path = path.Substring(1);
-			// TODO
-			path = Path.Combine(DirectoryPath, path);
-			return Path.Combine(Path.GetDirectoryName(path), ConvertFileName(Path.GetFileName(path)));
+			path = EscapePath(path);
+			return Path.Combine(DirectoryPath, path);
 		}
 
-		private string ConvertFileName(string filename)
+		private string EscapePath(string path)
+		{
+			if (path == "")
+				return path;
+			else
+				return Path.Combine(EscapePath(Path.GetDirectoryName(path)), EscapeFileName(Path.GetFileName(path)));
+		}
+
+		private string EscapeFileName(string filename)
 		{
 			if (filename.StartsWith(".LVFS.shadow."))
 				filename = ".LVFS.escape" + filename;
