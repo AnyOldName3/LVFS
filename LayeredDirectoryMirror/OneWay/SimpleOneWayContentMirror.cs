@@ -355,7 +355,8 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private void RemoveFileShadow(string path)
 		{
-			// TODO
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			File.Delete(shadowPath);
 		}
 
 		private void SafeDirectoryDelete(string path)
