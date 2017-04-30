@@ -1084,6 +1084,8 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				IEnumerable<FileInformation> thisCollection = new DirectoryInfo(convertedPath).GetFileSystemInfos().Where((fileInfo) =>
 				{
+					if (fileInfo.Name.StartsWith(".LVFS.shadow."))
+						return false;
 					names.Add(UnescapeFileName(fileInfo.Name));
 					if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
 						return !IsDirectoryShadowed(fileInfo.FullName);
