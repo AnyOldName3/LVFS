@@ -1212,7 +1212,6 @@ namespace LayeredDirectoryMirror.OneWay
 		/// <inheritdoc/>
 		public override bool OnMount()
 		{
-			// TODO
 			return Directory.Exists(DirectoryPath);
 		}
 
