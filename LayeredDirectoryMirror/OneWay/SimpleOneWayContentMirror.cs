@@ -252,35 +252,6 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 		}
 
-		/*
-		private bool EnsureDirectoryIsVisible(string path)
-		{
-			var parentPath = Path.GetDirectoryName(path);
-			if (!EnsureDirectoryIsVisible(parentPath))
-				return false;
-
-			var convertedPath = ConvertPath(path);
-			// There's something in the way
-			if (!IsFileShadowed(convertedPath) && (File.Exists(convertedPath) || PredecessorHasFile(path)))
-				return false;
-
-			if (!IsDirectoryShadowed(path))
-			{
-				if (Directory.Exists(path))
-					// It's already there
-					return true;
-				else if (PredecessorHasDirectory(path))
-				{
-					// We 
-				}
-			}
-
-
-
-			return false;
-		}
-		*/
-
 		private bool IsDirectoryVisible(string path)
 		{
 			return !IsDirectoryShadowed(path) && Directory.Exists(path);
