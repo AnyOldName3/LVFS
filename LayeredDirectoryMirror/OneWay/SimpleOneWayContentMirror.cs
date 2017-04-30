@@ -65,7 +65,7 @@ namespace LayeredDirectoryMirror.OneWay
 			return filename;
 		}
 
-		private string UnconvertFileName(string filename)
+		private string UnescapeFileName(string filename)
 		{
 			if (filename.StartsWith(".LVFS.escape.LVFS.shadow."))
 				filename = filename.Substring(".LVFS.escape".Length);
@@ -1113,7 +1113,7 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				IEnumerable<FileInformation> thisCollection = new DirectoryInfo(convertedPath).GetFileSystemInfos().Where((fileInfo) =>
 				{
-					names.Add(UnconvertFileName(fileInfo.Name));
+					names.Add(UnescapeFileName(fileInfo.Name));
 					if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
 						return !IsDirectoryShadowed(fileInfo.FullName);
 					else
@@ -1122,7 +1122,7 @@ namespace LayeredDirectoryMirror.OneWay
 				{
 					return new FileInformation
 					{
-						FileName = UnconvertFileName(fileInfo.Name),
+						FileName = UnescapeFileName(fileInfo.Name),
 						Attributes = fileInfo.Attributes,
 						CreationTime = fileInfo.CreationTime,
 						LastAccessTime = fileInfo.LastAccessTime,
@@ -1139,7 +1139,7 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				if (!names.Contains(fileInfo.FileName))
 				{
-					var convFilePath = Path.Combine(convertedPath, ConvertFileName(fileInfo.FileName));
+					var convFilePath = Path.Combine(convertedPath, EscapeFileName(fileInfo.FileName));
 					if ((fileInfo.Attributes.HasFlag(FileAttributes.Directory) && !IsDirectoryShadowed(convFilePath)) || (!fileInfo.Attributes.HasFlag(FileAttributes.Directory) && !IsFileShadowed(convFilePath)))
 						resultList.Add(fileInfo);
 				}
