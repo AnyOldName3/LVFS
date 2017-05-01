@@ -9,6 +9,7 @@ using DokanNet;
 using LVFS.External;
 
 using LayeredDirectoryMirror.DirectoryMirror;
+using LayeredDirectoryMirror.OneWay;
 
 namespace LVFS
 {
@@ -44,7 +45,7 @@ namespace LVFS
 
 			for (var i = 1; i < args.Length; i++)
 			{
-				lvfs.AddSource(args[i].StartsWith("-w=") ? (Source) new WritableDirectoryMirror(args[i].Substring(3)) : new ReadOnlyDirectoryMirror(args[i]));
+				lvfs.AddSource(args[i].StartsWith("-w=") ? (Source) new WritableDirectoryMirror(args[i].Substring("-w=".Length)) : args[i].StartsWith("-o=") ? (Source)new SimpleOneWayContentMirror(args[i].Substring("-o=".Length)) : new ReadOnlyDirectoryMirror(args[i]));
 			}
 
 			try
