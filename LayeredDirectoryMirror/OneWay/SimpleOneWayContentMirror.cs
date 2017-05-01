@@ -50,8 +50,8 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private string EscapePath(string path)
 		{
-			if (path == "")
-				return path;
+			if (path == "" || path == null)
+				return "";
 			else
 				return Path.Combine(EscapePath(Path.GetDirectoryName(path)), EscapeFileName(Path.GetFileName(path)));
 		}
@@ -285,8 +285,13 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private bool IsFileShadowed(string path)
 		{
-			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
-			return File.Exists(shadowPath) || IsDirectoryShadowed(Path.GetDirectoryName(path));
+			if (Path.GetFullPath(path).Equals(Path.GetFullPath(DirectoryPath), StringComparison.OrdinalIgnoreCase))
+				return false;
+			else
+			{
+				var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+				return File.Exists(shadowPath) || IsDirectoryShadowed(Path.GetDirectoryName(path));
+			}
 		}
 
 		private void MoveShadows(string source, string destination)

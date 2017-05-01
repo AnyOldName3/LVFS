@@ -13,7 +13,8 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			Console.WriteLine(Path.Combine("", @"some\random\path\dave.txt"));
+			var sowcm = new LayeredDirectoryMirror.OneWay.SimpleOneWayContentMirror(args[0]);
+			Console.WriteLine(sowcm.ConvertPath(args[1]));
 		}
 	}
 }

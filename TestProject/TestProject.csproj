@@ -50,6 +50,19 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LayeredDirectoryMirror\LayeredDirectoryMirror.csproj">
+      <Project>{c474b5d1-4d4a-4a23-a292-1c67322ffd4c}</Project>
+      <Name>LayeredDirectoryMirror</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LVFS\LVFS.csproj">
+      <Project>{C464EA2B-F01A-4947-A611-2F7CCCBDF379}</Project>
+      <Name>LVFS</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF EXIST C:\VMShare\NUL COPY $(TargetPath) C:\VMShare\</PostBuildEvent>
