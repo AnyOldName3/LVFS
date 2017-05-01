@@ -274,14 +274,19 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private bool IsDirectoryShadowed(string path)
 		{
-			// TODO
-			return false;
+			if (Path.GetFullPath(path).Equals(Path.GetFullPath(DirectoryPath), StringComparison.OrdinalIgnoreCase))
+				return false;
+			else
+			{
+				var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+				return Directory.Exists(shadowPath) || IsDirectoryShadowed(Path.GetDirectoryName(path));
+			}
 		}
 
 		private bool IsFileShadowed(string path)
 		{
-			// TODO
-			return false;
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			return File.Exists(shadowPath) || IsDirectoryShadowed(Path.GetDirectoryName(path));
 		}
 
 		private void MoveShadows(string source, string destination)
