@@ -995,15 +995,39 @@ namespace LayeredDirectoryMirror.OneWay
 		{
 			var convertedPath = ConvertPath(path);
 
-			if (IsFileShadowed(convertedPath) || IsDirectoryShadowed(convertedPath))
-				return null;
+			FileSystemInfo fileInfo;
 
-			FileSystemInfo fileInfo = new FileInfo(convertedPath);
-			if (!fileInfo.Exists)
+			if (!IsFileShadowed(convertedPath))
 			{
-				fileInfo = new DirectoryInfo(convertedPath);
+				fileInfo = new FileInfo(convertedPath);
 				if (!fileInfo.Exists)
-					return GetPredecessorFileInformation(path);
+				{
+					if (!IsDirectoryShadowed(convertedPath))
+					{
+						fileInfo = new DirectoryInfo(convertedPath);
+						if (!fileInfo.Exists)
+							return GetPredecessorFileInformation(path);
+					}
+					else
+					{
+						if (PredecessorHasRegularFile(path))
+							return GetPredecessorFileInformation(path);
+					}
+				}
+			}
+			else
+			{
+				if (!IsDirectoryShadowed(convertedPath))
+				{
+					fileInfo = new DirectoryInfo(convertedPath);
+					if (!fileInfo.Exists)
+					{
+						if (PredecessorHasDirectory(path))
+							return GetPredecessorFileInformation(path);
+					}
+				}
+				else
+					return null;
 			}
 
 			return new FileInformation
