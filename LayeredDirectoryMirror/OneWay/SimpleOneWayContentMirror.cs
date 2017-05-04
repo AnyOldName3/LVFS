@@ -1203,7 +1203,7 @@ namespace LayeredDirectoryMirror.OneWay
 				object rawContext;
 				info.Context.TryGetValue(this, out rawContext);
 				var context = rawContext as OneWayContext;
-				(context.Context as FileStream).Dispose();
+				(context.Context as FileStream)?.Dispose();
 				context.Context = null;
 
 				if (!HasFile(newPath))
