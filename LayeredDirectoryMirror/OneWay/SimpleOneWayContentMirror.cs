@@ -1115,12 +1115,16 @@ namespace LayeredDirectoryMirror.OneWay
 				var rawFiles = Directory.EnumerateFiles(convertedPath);
 				foreach (var file in rawFiles)
 				{
+					if (Path.GetFileName(file).StartsWith(".LVFS.shadow."))
+						continue;
 					if (!IsFileShadowed(file))
 						return true;
 				}
 				rawFiles = Directory.EnumerateDirectories(convertedPath);
 				foreach (var dir in rawFiles)
 				{
+					if (Path.GetFileName(dir).StartsWith(".LVFS.shadow."))
+						continue;
 					if (!IsDirectoryShadowed(dir))
 						return true;
 				}
