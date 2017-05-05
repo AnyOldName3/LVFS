@@ -13,8 +13,14 @@ namespace LVFS
 	{
 		static void Main(string[] args)
 		{
-			var sowcm = new LayeredDirectoryMirror.OneWay.SimpleOneWayContentMirror(args[0]);
-			Console.WriteLine(sowcm.ConvertPath(args[1]));
+			Console.WriteLine(File.Exists(args[0]));
+			using (var stream = new FileStream(args[0], FileMode.CreateNew, FileAccess.ReadWrite, FileShare.Delete))
+			{
+				Console.WriteLine(File.Exists(args[0]));
+				File.Delete(args[0]);
+				Console.WriteLine(File.Exists(args[0]));
+			}
+			Console.WriteLine(File.Exists(args[0]));
 		}
 	}
 }

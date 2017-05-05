@@ -374,16 +374,23 @@ namespace LayeredDirectoryMirror.OneWay
 		{
 			try
 			{
+				var convetedPath = ConvertPath(path);
+
 				object context;
 				if (info.Context.TryGetValue(this, out context))
 				{
-					((context as OneWayContext)?.Context as FileStream)?.Dispose();
+					var stream = ((context as OneWayContext)?.Context as FileStream);
+					if (stream != null)
+					{
+						stream.Dispose();
+						if (!File.Exists(convetedPath))
+							ShadowFile(convetedPath);
+					}
 					info.Context.Remove(this);
 				}
 
 				if (info.DeleteOnClose)
 				{
-					var convetedPath = ConvertPath(path);
 					if (info.IsDirectory)
 					{
 						SafeDirectoryDelete(convetedPath);
@@ -391,9 +398,12 @@ namespace LayeredDirectoryMirror.OneWay
 					else
 					{
 						if (File.Exists(convetedPath))
+						{
 							File.Delete(convetedPath);
-						
-						ShadowFile(convetedPath);
+
+							if (!File.Exists(convetedPath))
+								ShadowFile(convetedPath);
+						}
 					}
 				}
 			}
@@ -414,16 +424,23 @@ namespace LayeredDirectoryMirror.OneWay
 		{
 			try
 			{
+				var convetedPath = ConvertPath(path);
+
 				object context;
 				if (info.Context.TryGetValue(this, out context))
 				{
-					((context as OneWayContext)?.Context as FileStream)?.Dispose();
+					var stream = ((context as OneWayContext)?.Context as FileStream);
+					if (stream != null)
+					{
+						stream.Dispose();
+						if (!File.Exists(convetedPath))
+							ShadowFile(convetedPath);
+					}
 					info.Context.Remove(this);
 				}
 
 				if (info.DeleteOnClose)
 				{
-					var convetedPath = ConvertPath(path);
 					if (info.IsDirectory)
 					{
 						SafeDirectoryDelete(convetedPath);
@@ -431,9 +448,12 @@ namespace LayeredDirectoryMirror.OneWay
 					else
 					{
 						if (File.Exists(convetedPath))
+						{
 							File.Delete(convetedPath);
 
-						ShadowFile(convetedPath);
+							if (!File.Exists(convetedPath))
+								ShadowFile(convetedPath);
+						}
 					}
 				}
 			}
