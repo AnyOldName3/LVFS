@@ -1376,11 +1376,16 @@ namespace LayeredDirectoryMirror.OneWay
 			EnsureModifiable(path, info);
 			try
 			{
-				var stream = ((info.Context as OneWayContext)?.Context ?? null) as FileStream;
+				object rawContext;
+				info.Context.TryGetValue(this, out rawContext);
+				var stream = ((rawContext as OneWayContext)?.Context ?? null) as FileStream;
 				if (stream != null)
 					stream.SetLength(length);
 				else
-					new FileStream(ConvertPath(path), FileMode.Open).SetLength(length);
+					using (stream = new FileStream(ConvertPath(path), FileMode.Open))
+					{
+						stream.SetLength(length);
+					}
 				return DokanResult.Success;
 			}
 			catch (IOException)
