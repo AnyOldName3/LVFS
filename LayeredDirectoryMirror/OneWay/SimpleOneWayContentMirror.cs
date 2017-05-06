@@ -374,6 +374,8 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private bool IsDirectoryShadowed(string path)
 		{
+			if (path.Contains('*'))
+				return false;
 			if (Path.GetFullPath(path).Equals(Path.GetFullPath(DirectoryPath), StringComparison.OrdinalIgnoreCase))
 				return false;
 			else
@@ -385,6 +387,8 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private bool IsFileShadowed(string path)
 		{
+			if (path.Contains('*'))
+				return false;
 			if (Path.GetFullPath(path).Equals(Path.GetFullPath(DirectoryPath), StringComparison.OrdinalIgnoreCase))
 				return false;
 			else
