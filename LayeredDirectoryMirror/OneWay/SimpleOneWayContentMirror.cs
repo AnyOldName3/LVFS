@@ -87,7 +87,19 @@ namespace LayeredDirectoryMirror.OneWay
 			try
 			{
 				var fileInfo = GetPredecessorFileInformation(path).Value;
-				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				FileSystemSecurity fileSecurity;
+				try
+				{
+					fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					// We're not running as admin, so we can't do this.
+					if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+						fileSecurity = new DirectorySecurity();
+					else
+						fileSecurity = new FileSecurity();
+				}
 				var directoryPath = Path.GetDirectoryName(path);
 				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
 					CopyFromPredecessor(directoryPath);
@@ -163,7 +175,19 @@ namespace LayeredDirectoryMirror.OneWay
 			try
 			{
 				var fileInfo = GetPredecessorFileInformation(path).Value;
-				var fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				FileSystemSecurity fileSecurity;
+				try
+				{
+					fileSecurity = GetPredecessorFileSystemSecurity(path, AccessControlSections.All);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					// We're not running as admin, so we can't do this.
+					if (fileInfo.Attributes.HasFlag(FileAttributes.Directory))
+						fileSecurity = new DirectorySecurity();
+					else
+						fileSecurity = new FileSecurity();
+				}
 				var directoryPath = Path.GetDirectoryName(path);
 				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
 					CopyFromPredecessorExcludingContent(directoryPath);
