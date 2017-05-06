@@ -524,7 +524,7 @@ namespace LayeredDirectoryMirror.DirectoryMirror
 		/// <inheritdoc/>
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
-			if (info.Context.ContainsKey(this))
+			if (info != null && info.Context.ContainsKey(this))
 			{
 				var stream = info.Context[this] as FileStream;
 				lock (stream)

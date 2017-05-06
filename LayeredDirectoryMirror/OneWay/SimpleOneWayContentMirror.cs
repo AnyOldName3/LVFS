@@ -1370,7 +1370,7 @@ namespace LayeredDirectoryMirror.OneWay
 		public override bool ReadFile(string path, byte[] buffer, out int bytesRead, long offset, LVFSContextInfo info)
 		{
 			var convertedPath = ConvertPath(path);
-			if (info.Context.ContainsKey(this))
+			if (info != null && info.Context.ContainsKey(this))
 			{
 				var context = info.Context[this] as OneWayContext;
 				if (!context.OneWayControls && File.Exists(convertedPath))
