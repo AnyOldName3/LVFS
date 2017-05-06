@@ -252,6 +252,47 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 		}
 
+		private void MoveFileHelper(string sourceDir, string destDir)
+		{
+			// This is an unnecessarily complicated bit of the .NET API - security objects must be indirectly cloned instead of reused
+			var requiredSecurity = Directory.GetAccessControl(sourceDir).GetSecurityDescriptorSddlForm(AccessControlSections.All);
+			var newSecurity = new DirectorySecurity();
+			newSecurity.SetSecurityDescriptorSddlForm(requiredSecurity);
+
+			if (IsDirectoryShadowed(destDir))
+			{
+				RemoveDirectoryShadow(destDir);
+				try
+				{
+					Directory.SetAccessControl(destDir, newSecurity);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					// We're not running as admin, so we can't do this.
+				}
+			}
+			else
+				Directory.CreateDirectory(destDir, newSecurity);
+
+			var files = Directory.EnumerateFiles(sourceDir);
+			foreach (var file in files)
+			{
+				var name = Path.GetFileName(file);
+				if (!name.StartsWith(".LVFS.shadow."))
+					File.Move(file, Path.Combine(destDir, name));
+			}
+
+			var dirs = Directory.EnumerateDirectories(sourceDir);
+			foreach (var dir in dirs)
+			{
+				var name = Path.GetFileName(dir);
+				if (!name.StartsWith(".LVFS.shadow."))
+					MoveFileHelper(dir, Path.Combine(destDir, name));
+			}
+
+			SafeDirectoryDelete(sourceDir);
+		}
+
 		private bool IsDirectoryVisible(string path)
 		{
 			return !IsDirectoryShadowed(path) && Directory.Exists(path);
@@ -278,7 +319,7 @@ namespace LayeredDirectoryMirror.OneWay
 				return false;
 			else
 			{
-				var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+				var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow.d." + Path.GetFileName(path));
 				return Directory.Exists(shadowPath) || IsDirectoryShadowed(Path.GetDirectoryName(path));
 			}
 		}
@@ -307,14 +348,20 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				var destShadow = Path.Combine(destination, Path.GetFileName(shadow));
 				if (!Directory.Exists(destShadow))
-					Directory.CreateDirectory(destShadow);
-				MoveShadows(shadow, destShadow);
+					Directory.Move(shadow, destShadow);
+				else
+				{
+					MoveShadows(shadow, destShadow);
+					if (!Directory.EnumerateFileSystemEntries(shadow).Any())
+						Directory.Delete(shadow);
+				}
+
 			}
 		}
 
 		private void ShadowDirectory(string path)
 		{
-			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow.d." + Path.GetFileName(path));
 			Directory.CreateDirectory(shadowPath);
 			if (Directory.Exists(path))
 			{
@@ -331,7 +378,7 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private void RemoveDirectoryShadow(string path)
 		{
-			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow." + Path.GetFileName(path));
+			var shadowPath = Path.Combine(Path.GetDirectoryName(path), ".LVFS.shadow.d." + Path.GetFileName(path));
 			Directory.Move(shadowPath, path);
 		}
 
@@ -343,10 +390,10 @@ namespace LayeredDirectoryMirror.OneWay
 
 		private void SafeDirectoryDelete(string path)
 		{
+			ShadowDirectory(path);
+
 			if (Directory.Exists(path) && !Directory.EnumerateFileSystemEntries(path).Any())
 				Directory.Delete(path);
-
-			ShadowDirectory(path);
 		}
 
 		/// <inheritdoc/>
@@ -1230,15 +1277,15 @@ namespace LayeredDirectoryMirror.OneWay
 				{
 					if (info.IsDirectory)
 					{
-						if (IsDirectoryShadowed(fullNewPath))
-							RemoveDirectoryShadow(fullNewPath);
-						Directory.Move(fullCurrentPath, fullNewPath);
+						MoveFileHelper(fullCurrentPath, fullNewPath);
 					}
 					else
 					{
 						if (IsFileShadowed(fullNewPath))
 							RemoveFileShadow(fullNewPath);
 						File.Move(fullCurrentPath, fullNewPath);
+
+						ShadowFile(fullCurrentPath);
 					}
 
 					return DokanResult.Success;
@@ -1253,14 +1300,15 @@ namespace LayeredDirectoryMirror.OneWay
 					{
 						File.Delete(fullNewPath);
 						File.Move(fullCurrentPath, fullNewPath);
-						return DokanResult.Success;
 					}
 					else
 					{
 						// A predecessor source has the file to be replaced, so we can ignore it.
 						File.Move(fullCurrentPath, fullNewPath);
-						return DokanResult.Success;
 					}
+
+					ShadowFile(fullCurrentPath);
+					return DokanResult.Success;
 				}
 				else
 					return DokanResult.FileExists;
