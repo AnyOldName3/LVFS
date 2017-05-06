@@ -22,6 +22,8 @@ namespace LayeredDirectoryMirror.OneWay
 		/// </summary>
 		public string DirectoryPath { get; private set; }
 
+		private string DefaultSecurity { get; set; }
+
 		/// <summary>
 		/// Constructs the class to mirror the specified path, creating it if it does not exist and <paramref name="create"/> is set.
 		/// </summary>
@@ -32,6 +34,19 @@ namespace LayeredDirectoryMirror.OneWay
 			if (create && !Directory.Exists(path))
 				Directory.CreateDirectory(path);
 			DirectoryPath = path;
+
+			var random = new Random();
+			string tempFile;
+			do
+				tempFile = "" + random.Next();
+			while (File.Exists(Path.Combine(path, tempFile)));
+
+			using (var tempStream = File.Create(Path.Combine(path, tempFile)))
+			{ }
+
+			DefaultSecurity = File.GetAccessControl(Path.Combine(path, tempFile)).GetSecurityDescriptorSddlForm(AccessControlSections.All);
+
+			File.Delete(Path.Combine(path, tempFile));
 		}
 
 		/// <summary>
@@ -99,6 +114,7 @@ namespace LayeredDirectoryMirror.OneWay
 						fileSecurity = new DirectorySecurity();
 					else
 						fileSecurity = new FileSecurity();
+					fileSecurity.SetSecurityDescriptorSddlForm(DefaultSecurity);
 				}
 				var directoryPath = Path.GetDirectoryName(path);
 				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
@@ -187,6 +203,7 @@ namespace LayeredDirectoryMirror.OneWay
 						fileSecurity = new DirectorySecurity();
 					else
 						fileSecurity = new FileSecurity();
+					fileSecurity.SetSecurityDescriptorSddlForm(DefaultSecurity);
 				}
 				var directoryPath = Path.GetDirectoryName(path);
 				if (!IsDirectoryVisible(ConvertPath(directoryPath)))
