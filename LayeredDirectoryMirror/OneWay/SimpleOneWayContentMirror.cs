@@ -320,7 +320,10 @@ namespace LayeredDirectoryMirror.OneWay
 			{
 				var name = Path.GetFileName(file);
 				if (!name.StartsWith(".LVFS.shadow."))
+				{
 					File.Move(file, Path.Combine(destDir, name));
+					ShadowFile(file);
+				}
 			}
 
 			var dirs = Directory.EnumerateDirectories(sourceDir);
