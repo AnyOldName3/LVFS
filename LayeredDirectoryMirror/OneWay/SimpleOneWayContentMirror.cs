@@ -258,6 +258,19 @@ namespace LayeredDirectoryMirror.OneWay
 			}
 		}
 
+		private void CopyDirectoryContentFromPredecessor(string path)
+		{
+			var files = ListPredecessorFiles(path);
+			foreach (var file in files)
+			{
+				var fullPath = Path.Combine(path, file.FileName);
+				CopyFromPredecessor(fullPath);
+
+				if (file.Attributes.HasFlag(FileAttributes.Directory))
+					CopyDirectoryContentFromPredecessor(fullPath);
+			}
+		}
+
 		private void TransferFileHandle(string path, LVFSContextInfo info)
 		{
 			var context = info.Context[this] as OneWayContext;
@@ -281,6 +294,8 @@ namespace LayeredDirectoryMirror.OneWay
 					else
 					{
 						CopyFromPredecessor(path);
+						if (info.IsDirectory)
+							CopyDirectoryContentFromPredecessor(path);
 						TransferFileHandle(path, info);
 					}
 				}
@@ -1141,15 +1156,26 @@ namespace LayeredDirectoryMirror.OneWay
 					return null;
 			}
 
-			return new FileInformation
+			if (!fileInfo.Exists)
+				// The file has been deleted/renamed by another thread
+				return null;
+			try
 			{
-				FileName = path,
-				Attributes = fileInfo.Attributes,
-				CreationTime = fileInfo.CreationTime,
-				LastAccessTime = fileInfo.LastAccessTime,
-				LastWriteTime = fileInfo.LastWriteTime,
-				Length = (fileInfo as FileInfo)?.Length ?? 0
-			};
+				return new FileInformation
+				{
+					FileName = path,
+					Attributes = fileInfo.Attributes,
+					CreationTime = fileInfo.CreationTime,
+					LastAccessTime = fileInfo.LastAccessTime,
+					LastWriteTime = fileInfo.LastWriteTime,
+					Length = (fileInfo as FileInfo)?.Length ?? 0
+				};
+			}
+			catch (FileNotFoundException)
+			{
+				// The file has been deleted/renamed by another thread
+				return null;
+			}
 		}
 
 		/// <inheritdoc/>
